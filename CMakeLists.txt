@@ -6,7 +6,8 @@ project(learnopengl)
 include_directories(include)
 link_directories(include)
 
-set(SOURCES main.cpp glad.c)
+set(SOURCES main.cpp glad.c window.cpp)
+set(HEADERS window.h)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl")
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
