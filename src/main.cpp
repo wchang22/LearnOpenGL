@@ -6,7 +6,6 @@
 int main() {
   try {
     Window window;
-    Shader shaders("../shaders/vertex.glsl", "../shaders/fragment.glsl");
     window.main_loop();
   } catch (Window::WindowException e) {
     std::cerr << e.what() << std::endl;

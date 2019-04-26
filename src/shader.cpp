@@ -41,14 +41,16 @@ Shader::Shader(const char* path_vertex, const char* path_fragment) {
     glDeleteProgram(shader_program);
     throw ShaderException("Failed to link shaders, check above log");
   }
-
-  glUseProgram(shader_program);
 }
 
 Shader::~Shader() {
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
   glDeleteProgram(shader_program);
+}
+
+void Shader::use_shader() const {
+  glUseProgram(shader_program);
 }
 
 std::string Shader::read_source(const char* path) {

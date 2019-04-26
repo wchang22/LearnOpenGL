@@ -5,6 +5,11 @@
 class Display {
 public:
   Display();
+
+  void draw() const;
+
+private:
+  unsigned int VAO;
 };
 
 #endif // DISPLAY_H

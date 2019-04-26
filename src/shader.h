@@ -13,6 +13,8 @@ public:
     const char* what() const noexcept override;
   };
 
+  void use_shader() const;
+
 private:
   std::string read_source(const char* path);
   bool check_shader_errors(unsigned int shader);
