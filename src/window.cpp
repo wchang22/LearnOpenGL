@@ -1,4 +1,5 @@
 #include "window.h"
+#include "display.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -33,6 +34,7 @@ Window::~Window() {
 }
 
 void Window::main_loop() {
+  Display display;
   while (!glfwWindowShouldClose(window)) {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
