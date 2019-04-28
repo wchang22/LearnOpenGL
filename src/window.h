@@ -2,12 +2,9 @@
 #define WINDOW_H
 
 #include <stdexcept>
-#include <memory>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
-#include "shader.h"
 
 class Window {
 public:
@@ -24,9 +21,9 @@ public:
 private:
   static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
   static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+  static void cycle_fill_mode();
 
   GLFWwindow* window;
-  std::unique_ptr<Shader> shaders;
 };
 
 #endif // WINDOW_H

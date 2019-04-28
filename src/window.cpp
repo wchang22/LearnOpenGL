@@ -4,9 +4,7 @@
 const int WIDTH = 800;
 const int HEIGHT = 600;
 
-Window::Window() :
-  shaders(nullptr)
-{
+Window::Window() {
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -29,8 +27,6 @@ Window::Window() :
   glViewport(0, 0, WIDTH, HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetKeyCallback(window, key_callback);
-
-  shaders = std::make_unique<Shader>("../shaders/vertex.glsl", "../shaders/fragment.glsl");
 }
 
 Window::~Window() {
@@ -39,7 +35,6 @@ Window::~Window() {
 
 void Window::main_loop() const {
   Display display;
-  shaders->use_shader();
 
   while (!glfwWindowShouldClose(window)) {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -69,7 +64,25 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
     case GLFW_KEY_ESCAPE:
       glfwSetWindowShouldClose(window, true);
       break;
+    case GLFW_KEY_T:
+      cycle_fill_mode();
+      break;
     default:
+      break;
+  }
+}
+
+void Window::cycle_fill_mode() {
+  static GLenum fill_mode = GL_FILL;
+
+  switch (fill_mode) {
+    case GL_FILL:
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      fill_mode = GL_LINE;
+      break;
+    case GL_LINE:
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      fill_mode = GL_FILL;
       break;
   }
 }

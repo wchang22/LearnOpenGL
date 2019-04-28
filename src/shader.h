@@ -13,7 +13,8 @@ public:
     const char* what() const noexcept override;
   };
 
-  void use_shader() const;
+  void use_shader_program() const;
+  int get_uniform_location(const char* uniform) const;
 
 private:
   std::string read_source(const char* path);

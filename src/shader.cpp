@@ -49,8 +49,12 @@ Shader::~Shader() {
   glDeleteProgram(shader_program);
 }
 
-void Shader::use_shader() const {
+void Shader::use_shader_program() const {
   glUseProgram(shader_program);
+}
+
+int Shader::get_uniform_location(const char* uniform) const {
+  return glGetUniformLocation(shader_program, uniform);
 }
 
 std::string Shader::read_source(const char* path) {
