@@ -1,7 +1,9 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <stdexcept>
+#include "display.h"
+
+#include <memory>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -11,12 +13,7 @@ public:
   Window();
   ~Window();
 
-  void main_loop() const;
-
-  struct WindowException : public std::runtime_error {
-    WindowException(const char* msg);
-    const char* what() const noexcept override;
-  };
+  void main_loop();
 
 private:
   static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -24,6 +21,7 @@ private:
   static void cycle_fill_mode();
 
   GLFWwindow* window;
+  std::unique_ptr<Display> display;
 };
 
 #endif // WINDOW_H

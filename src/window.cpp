@@ -1,10 +1,12 @@
 #include "window.h"
-#include "display.h"
+#include "exception.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
 
-Window::Window() {
+Window::Window()
+  : window(nullptr), display(nullptr)
+{
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -13,34 +15,37 @@ Window::Window() {
   window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
 
   if (!window) {
+    glfwDestroyWindow(window);
     glfwTerminate();
-    throw WindowException("Failed to create GLFW Window");
+    throw Exception::WindowException("Failed to create GLFW Window");
   }
 
   glfwMakeContextCurrent(window);
 
   if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+    glfwDestroyWindow(window);
     glfwTerminate();
-    throw WindowException("Failed to create initialize GLAD");
+    throw Exception::WindowException("Failed to create initialize GLAD");
   }
 
   glViewport(0, 0, WIDTH, HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetKeyCallback(window, key_callback);
+
+  display = std::make_unique<Display>();
 }
 
 Window::~Window() {
+  glfwDestroyWindow(window);
   glfwTerminate();
 }
 
-void Window::main_loop() const {
-  Display display;
-
+void Window::main_loop() {
   while (!glfwWindowShouldClose(window)) {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    display.draw();
+    display->draw();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -85,10 +90,4 @@ void Window::cycle_fill_mode() {
       fill_mode = GL_FILL;
       break;
   }
-}
-
-Window::WindowException::WindowException(const char* msg) : std::runtime_error(msg) {}
-
-const char* Window::WindowException::what() const noexcept {
-  return std::runtime_error::what();
 }

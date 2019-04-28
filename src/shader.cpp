@@ -1,4 +1,5 @@
 #include "shader.h"
+#include "exception.h"
 
 #include <fstream>
 #include <iostream>
@@ -17,7 +18,7 @@ Shader::Shader(const char* path_vertex, const char* path_fragment) {
 
   if (!check_shader_errors(vertex_shader)) {
     glDeleteShader(vertex_shader);
-    throw ShaderException("Failed to compile vertex shader, check above log");
+    throw Exception::ShaderException("Failed to compile vertex shader, check above log");
   }
 
   fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -27,7 +28,7 @@ Shader::Shader(const char* path_vertex, const char* path_fragment) {
   if (!check_shader_errors(fragment_shader)) {
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
-    throw ShaderException("Failed to compile fragment shader, check above log");
+    throw Exception::ShaderException("Failed to compile fragment shader, check above log");
   }
 
   shader_program = glCreateProgram();
@@ -39,7 +40,7 @@ Shader::Shader(const char* path_vertex, const char* path_fragment) {
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
     glDeleteProgram(shader_program);
-    throw ShaderException("Failed to link shaders, check above log");
+    throw Exception::ShaderException("Failed to link shaders, check above log");
   }
 }
 
@@ -49,11 +50,11 @@ Shader::~Shader() {
   glDeleteProgram(shader_program);
 }
 
-void Shader::use_shader_program() const {
+void Shader::use_shader_program() {
   glUseProgram(shader_program);
 }
 
-int Shader::get_uniform_location(const char* uniform) const {
+int Shader::get_uniform_location(const char* uniform) {
   return glGetUniformLocation(shader_program, uniform);
 }
 
@@ -62,7 +63,8 @@ std::string Shader::read_source(const char* path) {
   std::string source;
 
   if (!file.is_open()) {
-    throw ShaderException((std::string("Cannot open file ") + std::string(path)).c_str());
+    throw Exception::ShaderException((std::string("Cannot open file ") +
+                                      std::string(path)).c_str());
   }
 
   std::string line;
@@ -104,10 +106,4 @@ bool Shader::check_program_errors(unsigned int program){
   std::cerr << log << std::endl;
 
   return false;
-}
-
-Shader::ShaderException::ShaderException(const char* msg) : std::runtime_error(msg) {}
-
-const char* Shader::ShaderException::what() const noexcept {
-  return std::runtime_error::what();
 }

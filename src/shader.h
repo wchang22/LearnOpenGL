@@ -1,25 +1,20 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <stdexcept>
+#include <string>
 
 class Shader {
 public:
   Shader(const char* path_vertex, const char* path_fragment);
   ~Shader();
 
-  struct ShaderException : public std::runtime_error {
-    ShaderException(const char* msg);
-    const char* what() const noexcept override;
-  };
-
-  void use_shader_program() const;
-  int get_uniform_location(const char* uniform) const;
+  void use_shader_program();
+  int get_uniform_location(const char* uniform);
 
 private:
-  std::string read_source(const char* path);
-  bool check_shader_errors(unsigned int shader);
-  bool check_program_errors(unsigned int program);
+  static std::string read_source(const char* path);
+  static bool check_shader_errors(unsigned int shader);
+  static bool check_program_errors(unsigned int program);
 
   unsigned int vertex_shader;
   unsigned int fragment_shader;
