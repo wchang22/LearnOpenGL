@@ -1,9 +1,12 @@
 #include "window.h"
 #include "exception.h"
 
+const float MOUSE_SENSITIVITY = 0.05f;
+static float delta_fovy = 0.0f;
+
 Window::Window()
   : window(nullptr), display(nullptr),
-    camera(std::make_shared<Camera>(vec3(0.0f, 0.0f, 3.0f),
+    camera(std::make_shared<Camera>(vec3(0.0f, 0.0f, 6.0f),
                                     vec3(0.0f, 0.0f, -1.0f),
                                     vec3(0.0f, 1.0f, 0.0f)))
 {
@@ -30,8 +33,11 @@ Window::Window()
 
   glViewport(0, 0, WIDTH, HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+  glfwSetScrollCallback(window, scroll_callback);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   display = std::make_unique<Display>(camera);
+
 }
 
 Window::~Window() {
@@ -46,11 +52,14 @@ void Window::main_loop() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     camera->update_frames();
+    camera->update_fov(delta_fovy);
+    delta_fovy = 0.0f;
     display->draw();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
-    key_callback(window);
+    key_callback();
+    mouse_callback();
   }
 }
 
@@ -59,7 +68,14 @@ void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height
   glViewport(0, 0, width, height);
 }
 
-void Window::key_callback(GLFWwindow* window) {
+void Window::scroll_callback(GLFWwindow* window, double delta_x, double delta_y) {
+  (void) window;
+  (void) delta_x;
+
+  delta_fovy = static_cast<float>(delta_y);
+}
+
+void Window::key_callback() {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, true);
   }
@@ -78,6 +94,29 @@ void Window::key_callback(GLFWwindow* window) {
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
     camera->move_right();
   }
+}
+
+void Window::mouse_callback() {
+  static bool first_time = true;
+  static double prev_x, prev_y;
+  double x, y;
+  glfwGetCursorPos(window, &x, &y);
+
+  if (first_time) {
+    prev_x = x;
+    prev_y = y;
+    first_time = false;
+  }
+
+  float delta_x = static_cast<float>(x - prev_x);
+  float delta_y = static_cast<float>(prev_y - y);
+  prev_x = x;
+  prev_y = y;
+
+  delta_x *= MOUSE_SENSITIVITY;
+  delta_y *= MOUSE_SENSITIVITY;
+
+  camera->update_direction(delta_x, delta_y);
 }
 
 void Window::cycle_fill_mode() {

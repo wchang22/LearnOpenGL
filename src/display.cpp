@@ -86,18 +86,15 @@ void Display::draw() const {
     const double time = glfwGetTime();
 
     const int num_matrices = 1;
-    mat4 view(1.0f);
+    mat4 view = camera->lookat();
     mat4 model(1.0f);
-
-    view = camera->lookat();
     model = glm::translate(model, cubePositions[i]);
     model = glm::rotate(model, glm::radians(20.0f * i) + static_cast<float>(time),
                         vec3(1.0f, 0.3f, 0.5f));
     mat4 modelview = view * model;
 
-    mat4 perspective(1.0f);
-    perspective = glm::perspective(45.0f, static_cast<float>(Window::WIDTH) / Window::HEIGHT,
-                                   0.1f, 100.0f);
+    mat4 perspective = camera->perspective();
+
     glUniformMatrix4fv(shaders->get_uniform_location("modelview"),
                        num_matrices, GL_FALSE, &modelview[0][0]);
     glUniformMatrix4fv(shaders->get_uniform_location("perspective"),
