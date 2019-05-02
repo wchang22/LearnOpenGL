@@ -2,12 +2,13 @@
 #define DISPLAY_H
 
 #include <memory>
+#include "camera.h"
 
 #include "shader.h"
 
 class Display {
 public:
-  Display();
+  Display(std::shared_ptr<Camera> camera);
   ~Display();
 
   void draw() const;
@@ -23,6 +24,7 @@ private:
   void init_shaders();
 
   std::unique_ptr<Shader> shaders;
+  std::shared_ptr<Camera> camera;
 };
 
 #endif // DISPLAY_H

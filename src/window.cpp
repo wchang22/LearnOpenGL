@@ -1,11 +1,11 @@
 #include "window.h"
 #include "exception.h"
 
-const int WIDTH = 800;
-const int HEIGHT = 600;
-
 Window::Window()
-  : window(nullptr), display(nullptr)
+  : window(nullptr), display(nullptr),
+    camera(std::make_shared<Camera>(vec3(0.0f, 0.0f, 3.0f),
+                                    vec3(0.0f, 0.0f, -1.0f),
+                                    vec3(0.0f, 1.0f, 0.0f)))
 {
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -30,9 +30,8 @@ Window::Window()
 
   glViewport(0, 0, WIDTH, HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-  glfwSetKeyCallback(window, key_callback);
 
-  display = std::make_unique<Display>();
+  display = std::make_unique<Display>(camera);
 }
 
 Window::~Window() {
@@ -41,14 +40,17 @@ Window::~Window() {
 }
 
 void Window::main_loop() {
+  glEnable(GL_DEPTH_TEST);
   while (!glfwWindowShouldClose(window)) {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    camera->update_frames();
     display->draw();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
+    key_callback(window);
   }
 }
 
@@ -57,23 +59,24 @@ void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height
   glViewport(0, 0, width, height);
 }
 
-void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  (void) scancode;
-  (void) mods;
-
-  if (action != GLFW_PRESS) {
-    return;
+void Window::key_callback(GLFWwindow* window) {
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, true);
   }
-
-  switch (key) {
-    case GLFW_KEY_ESCAPE:
-      glfwSetWindowShouldClose(window, true);
-      break;
-    case GLFW_KEY_T:
-      cycle_fill_mode();
-      break;
-    default:
-      break;
+  if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+    cycle_fill_mode();
+  }
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    camera->move_forward();
+  }
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    camera->move_backward();
+  }
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    camera->move_left();
+  }
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    camera->move_right();
   }
 }
 

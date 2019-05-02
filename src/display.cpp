@@ -1,30 +1,71 @@
 #include "display.h"
 #include "exception.h"
+#include "window.h"
 
 #include <cmath>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stb_image/stb_image.h>
 
+typedef glm::mat4 mat4;
+typedef glm::vec3 vec3;
+
 const float vertices[] = {
-  // positions          // colors           // texture coords
-   0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-   0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-  -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-  -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
+  -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+   0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+
+  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+   0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+   0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+  -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+
+  -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+   0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+   0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+   0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+   0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+   0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+   0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+  -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
 };
 
-const unsigned int indices[] = {
-  0, 1, 3,
-  1, 2, 3,
+static unsigned int indices[36] = {};
+
+static const glm::vec3 cubePositions[] = {
+  glm::vec3( 0.0f,  0.0f,  0.0f),
+  glm::vec3( 2.0f,  5.0f, -15.0f),
+  glm::vec3(-1.5f, -2.2f, -2.5f),
+  glm::vec3(-3.8f, -2.0f, -12.3f),
+  glm::vec3( 2.4f, -0.4f, -3.5f),
+  glm::vec3(-1.7f,  3.0f, -7.5f),
+  glm::vec3( 1.3f, -2.0f, -2.5f),
+  glm::vec3( 1.5f,  2.0f, -2.5f),
+  glm::vec3( 1.5f,  0.2f, -1.5f),
+  glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
-static const char* texture_path_0 = "../assets/container.jpg";
-static const char* texture_path_1 = "../assets/awesomeface.png";
+static const char* texture_path_0 = "../../assets/container.jpg";
+static const char* texture_path_1 = "../../assets/awesomeface.png";
 
-Display::Display()
-  : shaders(std::make_unique<Shader>("../shaders/vertex.glsl", "../shaders/fragment.glsl"))
+Display::Display(std::shared_ptr<Camera> camera)
+  : shaders(std::make_unique<Shader>("../../shaders/vertex.glsl", "../../shaders/fragment.glsl")),
+    camera(camera)
 {
   init_textures();
   init_buffers();
@@ -39,23 +80,47 @@ Display::~Display() {
 }
 
 void Display::draw() const {
-  const int num_vertices = sizeof (indices) / sizeof(unsigned int);
+  for (int i = 0; i < 10; i++) {
+    const int num_vertices = sizeof (indices) / sizeof(unsigned int);
 
-  const double time = glfwGetTime();
-  const float color_offset = static_cast<float>(sin(time) / 2.0);
-  glUniform4f(shaders->get_uniform_location("color"),
-              color_offset, color_offset, color_offset, 1.0);
+    const double time = glfwGetTime();
 
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, textures[0]);
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, textures[1]);
+    const int num_matrices = 1;
+    mat4 view(1.0f);
+    mat4 model(1.0f);
 
-  glBindVertexArray(VAO);
-  glDrawElements(GL_TRIANGLES, num_vertices, GL_UNSIGNED_INT, buffer_offset(0));
+    view = camera->lookat();
+    model = glm::translate(model, cubePositions[i]);
+    model = glm::rotate(model, glm::radians(20.0f * i) + static_cast<float>(time),
+                        vec3(1.0f, 0.3f, 0.5f));
+    mat4 modelview = view * model;
+
+    mat4 perspective(1.0f);
+    perspective = glm::perspective(45.0f, static_cast<float>(Window::WIDTH) / Window::HEIGHT,
+                                   0.1f, 100.0f);
+    glUniformMatrix4fv(shaders->get_uniform_location("modelview"),
+                       num_matrices, GL_FALSE, &modelview[0][0]);
+    glUniformMatrix4fv(shaders->get_uniform_location("perspective"),
+                       num_matrices, GL_FALSE, &perspective[0][0]);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, num_vertices, GL_UNSIGNED_INT, buffer_offset(0));
+  }
 }
 
 void Display::init_buffers() {
+  for (unsigned int i = 0; i < 6; i++) {
+    unsigned int index_bases[] = {2, 3, 0, 2, 1, 0};
+    for (unsigned int j = 0; j < 6; j++) {
+      indices[i * 6 + j] = index_bases[j] + i * 4;
+    }
+  }
+
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
   glGenBuffers(1, &EBO);
@@ -69,9 +134,8 @@ void Display::init_buffers() {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
   const int position_size = 3;
-  const int color_size = 3;
   const int texture_size = 2;
-  const int vertex_stride = (position_size + color_size + texture_size) * sizeof (float);
+  const int vertex_stride = (position_size + texture_size) * sizeof (float);
 
   const unsigned int position_location = 0;
   const void* position_offset = buffer_offset(0);
@@ -79,14 +143,8 @@ void Display::init_buffers() {
                         vertex_stride, position_offset);
   glEnableVertexAttribArray(position_location);
 
-  const unsigned int color_location = 1;
-  const void* color_offset = buffer_offset(position_size * sizeof(float));
-  glVertexAttribPointer(color_location, color_size, GL_FLOAT, GL_FALSE,
-                        vertex_stride, color_offset);
-  glEnableVertexAttribArray(color_location);
-
   const unsigned int texture_location = 2;
-  const void* texture_offset = buffer_offset((position_size + color_size) * sizeof(float));
+  const void* texture_offset = buffer_offset((position_size) * sizeof(float));
   glVertexAttribPointer(texture_location, texture_size, GL_FLOAT, GL_FALSE,
                         vertex_stride, texture_offset);
   glEnableVertexAttribArray(texture_location);
@@ -156,5 +214,5 @@ void Display::init_shaders() {
 }
 
 void* Display::buffer_offset(int offset) {
-  return static_cast<void*>(static_cast<char*>(nullptr) + offset);
+  return reinterpret_cast<void*>(offset);
 }

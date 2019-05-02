@@ -2,11 +2,15 @@
 #define WINDOW_H
 
 #include "display.h"
+#include "camera.h"
 
 #include <memory>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+typedef glm::vec3 vec3;
+typedef glm::mat4 mat4;
 
 class Window {
 public:
@@ -15,13 +19,17 @@ public:
 
   void main_loop();
 
+  static const int WIDTH = 800;
+  static const int HEIGHT = 600;
+
 private:
   static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-  static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+  void key_callback(GLFWwindow* window);
   static void cycle_fill_mode();
 
   GLFWwindow* window;
   std::unique_ptr<Display> display;
+  std::shared_ptr<Camera> camera;
 };
 
 #endif // WINDOW_H
