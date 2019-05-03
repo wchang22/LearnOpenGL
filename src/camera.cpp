@@ -46,6 +46,14 @@ void Camera::move_right() {
   position += glm::normalize(glm::cross(direction, up)) * speed;
 }
 
+void Camera::move_up() {
+  position += up * speed;
+}
+
+void Camera::move_down() {
+  position += -up * speed;
+}
+
 void Camera::update_frames() {
   float current_frame = static_cast<float>(glfwGetTime());
   time_delta = current_frame - last_frame;

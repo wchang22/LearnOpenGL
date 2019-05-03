@@ -94,6 +94,12 @@ void Window::key_callback() {
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
     camera->move_right();
   }
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+    camera->move_up();
+  }
+  if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
+    camera->move_down();
+  }
 }
 
 void Window::mouse_callback() {

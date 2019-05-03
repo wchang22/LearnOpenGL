@@ -10,6 +10,6 @@ link_directories(include)
 
 file(GLOB_RECURSE SOURCES src/* shaders/* include/*)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -fopenmp")
 
 add_executable(${PROJECT_NAME} ${SOURCES})

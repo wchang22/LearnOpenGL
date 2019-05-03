@@ -9,6 +9,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stb_image/stb_image.h>
+#include <omp.h>
 
 typedef glm::mat4 mat4;
 typedef glm::vec3 vec3;
@@ -47,18 +48,8 @@ const float vertices[] = {
 
 static unsigned int indices[36] = {};
 
-static const glm::vec3 cubePositions[] = {
-  glm::vec3( 0.0f,  0.0f,  0.0f),
-  glm::vec3( 2.0f,  5.0f, -15.0f),
-  glm::vec3(-1.5f, -2.2f, -2.5f),
-  glm::vec3(-3.8f, -2.0f, -12.3f),
-  glm::vec3( 2.4f, -0.4f, -3.5f),
-  glm::vec3(-1.7f,  3.0f, -7.5f),
-  glm::vec3( 1.3f, -2.0f, -2.5f),
-  glm::vec3( 1.5f,  2.0f, -2.5f),
-  glm::vec3( 1.5f,  0.2f, -1.5f),
-  glm::vec3(-1.3f,  1.0f, -1.5f)
-};
+const int NUM_CUBES = 2000;
+static glm::vec3 cubePositions[NUM_CUBES];
 
 static const char* texture_path_0 = "../../assets/container.jpg";
 static const char* texture_path_1 = "../../assets/awesomeface.png";
@@ -67,9 +58,18 @@ Display::Display(std::shared_ptr<Camera> camera)
   : shaders(std::make_unique<Shader>("../../shaders/vertex.glsl", "../../shaders/fragment.glsl")),
     camera(camera)
 {
+  srand(static_cast<unsigned int>(time(nullptr)));
+
   init_textures();
   init_buffers();
   init_shaders();
+
+  glBindVertexArray(VAO);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, textures[0]);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, textures[1]);
 }
 
 Display::~Display() {
@@ -80,32 +80,32 @@ Display::~Display() {
 }
 
 void Display::draw() const {
-  for (int i = 0; i < 10; i++) {
-    const int num_vertices = sizeof (indices) / sizeof(unsigned int);
+  static const int num_vertices = sizeof (indices) / sizeof(unsigned int);
+  static const int model_location = shaders->get_uniform_location("model");
+  const double time = glfwGetTime();
 
-    const double time = glfwGetTime();
+  mat4 view = camera->lookat();
+  mat4 perspective = camera->perspective();
 
-    const int num_matrices = 1;
-    mat4 view = camera->lookat();
-    mat4 model(1.0f);
-    model = glm::translate(model, cubePositions[i]);
-    model = glm::rotate(model, glm::radians(20.0f * i) + static_cast<float>(time),
-                        vec3(1.0f, 0.3f, 0.5f));
-    mat4 modelview = view * model;
+  glUniformMatrix4fv(shaders->get_uniform_location("perspective"),
+                     1, GL_FALSE, &perspective[0][0]);
+  glUniformMatrix4fv(shaders->get_uniform_location("view"),
+                     1, GL_FALSE, &view[0][0]);
 
-    mat4 perspective = camera->perspective();
+  mat4 rot[NUM_CUBES];
 
-    glUniformMatrix4fv(shaders->get_uniform_location("modelview"),
-                       num_matrices, GL_FALSE, &modelview[0][0]);
-    glUniformMatrix4fv(shaders->get_uniform_location("perspective"),
-                       num_matrices, GL_FALSE, &perspective[0][0]);
+  #pragma omp parallel for
+  for (int i = 0; i < NUM_CUBES; i++) {
+    rot[i] = glm::rotate(mat4(1.0f), glm::radians(20.0f * i) + static_cast<float>(time),
+                         vec3(1.0f, 0.3f, 0.5f));
+  }
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
+  #pragma omp parallel for
+  for (int i = 0; i < NUM_CUBES; i++) {
+    mat4 model = glm::translate(mat4(1.0f), cubePositions[i]) * rot[i];
 
-    glBindVertexArray(VAO);
+    glUniformMatrix4fv(model_location, 1, GL_FALSE, &model[0][0]);
+
     glDrawElements(GL_TRIANGLES, num_vertices, GL_UNSIGNED_INT, buffer_offset(0));
   }
 }
@@ -149,6 +149,10 @@ void Display::init_buffers() {
   glBindVertexArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  for (int i = 0; i < NUM_CUBES; i++) {
+    cubePositions[i] = vec3(rand() % 100 - 50, rand() % 100 - 50, rand() % 100 - 50);
+  }
 }
 
 void Display::init_textures() {

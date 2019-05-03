@@ -18,6 +18,8 @@ public:
   void move_backward();
   void move_left();
   void move_right();
+  void move_up();
+  void move_down();
   void update_frames();
   void update_direction(float delta_x, float delta_y);
   void update_fov(float delta_y);
