@@ -1,7 +1,6 @@
 #include "window.h"
 #include "exception.h"
 
-
 #include <iostream>
 
 int main() {

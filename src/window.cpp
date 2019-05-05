@@ -83,22 +83,22 @@ void Window::key_callback() {
     cycle_fill_mode();
   }
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-    camera->move_forward();
+    camera->move(Camera::FORWARD);
   }
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-    camera->move_backward();
+    camera->move(Camera::BACKWARD);
   }
   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-    camera->move_left();
+    camera->move(Camera::LEFT);
   }
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-    camera->move_right();
+    camera->move(Camera::RIGHT);
   }
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-    camera->move_up();
+    camera->move(Camera::UP);
   }
   if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-    camera->move_down();
+    camera->move(Camera::DOWN);
   }
 }
 

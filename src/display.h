@@ -2,9 +2,10 @@
 #define DISPLAY_H
 
 #include <memory>
-#include "camera.h"
 
+#include "camera.h"
 #include "shader.h"
+#include "texture.h"
 
 class Display {
 public:
@@ -15,8 +16,6 @@ public:
 
 private:
   unsigned int VAO, VBO, EBO;
-  static const unsigned int num_textures = 2;
-  unsigned int textures[num_textures];
 
   static void* buffer_offset(int offset);
   void init_buffers();
@@ -25,6 +24,7 @@ private:
 
   std::unique_ptr<Shader> shaders;
   std::shared_ptr<Camera> camera;
+  Texture textures;
 };
 
 #endif // DISPLAY_H
