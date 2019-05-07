@@ -27,6 +27,7 @@ public:
   void update_frames();
   void update_direction(float delta_x, float delta_y);
   void update_fov(float delta_y);
+  vec3 get_position() const;
 
 private:
   vec3 position;
