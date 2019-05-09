@@ -11,8 +11,8 @@ public:
   Texture();
   ~Texture();
 
-  void load_texture_from_image(const char* path, GLenum image_format);
-  void use_textures();
+  void load_texture_from_image(const char* path);
+  void use_textures() const;
 
 private:
   std::vector<GLuint> textures;

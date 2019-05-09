@@ -13,8 +13,8 @@ Display::Display(std::shared_ptr<Camera> camera)
   srand(static_cast<unsigned int>(time(nullptr)));
 
   init_shaders();
-  init_textures();
   init_buffers();
+  init_textures();
 }
 
 Display::~Display() {
@@ -67,12 +67,11 @@ void Display::draw() const {
   glUniform3fv(shaders->get_uniform_location("light.diffuse"), 1, &light.diffuse[0]);
   glUniform3fv(shaders->get_uniform_location("light.specular"), 1, &light.specular[0]);
 
-  glUniform3fv(shaders->get_uniform_location("view_position"), 1, &camera->get_position()[0]);
+  glUniform1i(shaders->get_uniform_location("diffuse"), 0);
+  glUniform1i(shaders->get_uniform_location("specular"), 1);
+  glUniform1f(shaders->get_uniform_location("material.shininess"), 64.0f);
 
-  glUniform3f(shaders->get_uniform_location("material.ambient"), 1.0f, 0.5f, 0.31f);
-  glUniform3f(shaders->get_uniform_location("material.diffuse"), 1.0f, 0.5f, 0.31f);
-  glUniform3f(shaders->get_uniform_location("material.specular"), 0.5f, 0.5f, 0.5f);
-  glUniform1f(shaders->get_uniform_location("material.shininess"), 32.0f);
+  glUniform3fv(shaders->get_uniform_location("view_position"), 1, &camera->get_position()[0]);
 
   mat4 model(1.0f);
 
@@ -124,7 +123,8 @@ void Display::init_buffers() {
 
   const int position_size = 3;
   const int normal_size = 3;
-  const int vertex_stride = (position_size + normal_size) * sizeof (float);
+  const int texture_size = 2;
+  const int vertex_stride = (position_size + normal_size + texture_size) * sizeof (float);
 
   const unsigned int position_location = 0;
   const void* position_offset = buffer_offset(0);
@@ -137,6 +137,12 @@ void Display::init_buffers() {
   glVertexAttribPointer(normal_location, normal_size, GL_FLOAT, GL_FALSE,
                         vertex_stride, normal_offset);
   glEnableVertexAttribArray(normal_location);
+
+  const unsigned int texture_location = 2;
+  const void* texture_offset = buffer_offset((position_size + normal_size) * sizeof (float));
+  glVertexAttribPointer(texture_location, texture_size, GL_FLOAT, GL_FALSE,
+                        vertex_stride, texture_offset);
+  glEnableVertexAttribArray(texture_location);
 
   //-----------------------------------------------------------------------------------------------
   // Light
@@ -162,15 +168,9 @@ void Display::init_buffers() {
 }
 
 void Display::init_textures() {
-  const char* texture_path_0 = "../../assets/container.jpg";
-  const char* texture_path_1 = "../../assets/awesomeface.png";
-
-  textures.load_texture_from_image(texture_path_0, GL_RGB);
-  textures.load_texture_from_image(texture_path_1, GL_RGBA);
+  textures.load_texture_from_image("../../assets/container2.png");
+  textures.load_texture_from_image("../../assets/container2_specular.png");
   textures.use_textures();
-
-  //glUniform1i(shaders->get_uniform_location("texture0"), 0);
-  //glUniform1i(shaders->get_uniform_location("texture1"), 1);
 }
 
 void Display::init_shaders() {
