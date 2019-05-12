@@ -2,8 +2,6 @@
 #include "exception.h"
 #include "data.h"
 
-#include <sstream>
-
 #include <glm/gtc/matrix_transform.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -91,18 +89,12 @@ void Display::draw() const {
   glUniform3fv(shaders->get_uniform_location("dir_light.specular"), 1, &dir_light.specular[0]);
 
   for (unsigned int i = 0; i < NUM_POINT_LIGHTS; i++) {
-    std::stringstream ss;
-
-    ss << "point_light[";
-    ss << i;
-    ss << "].";
-
-    std::string point_light_str = ss.str();
-    std::string position_str = point_light_str + std::string("position");
-    std::string ambient_str = point_light_str + std::string("ambient");
-    std::string diffuse_str = point_light_str + std::string("diffuse");
-    std::string specular_str = point_light_str + std::string("specular");
-    std::string attenuation_str = point_light_str + std::string("attenuation");
+    std::string point_light_str = "point_light[" + std::to_string(i) + "].";
+    std::string position_str = point_light_str + "position";
+    std::string ambient_str = point_light_str + "ambient";
+    std::string diffuse_str = point_light_str + "diffuse";
+    std::string specular_str = point_light_str + "specular";
+    std::string attenuation_str = point_light_str + "attenuation";
 
     glUniform3fv(shaders->get_uniform_location(position_str.c_str()), 1, &POINT_LIGHT_POSITIONS[i][0]);
     glUniform3fv(shaders->get_uniform_location(ambient_str.c_str()), 1, &point_light.ambient[0]);

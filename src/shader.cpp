@@ -54,7 +54,7 @@ void Shader::use_shader_program() {
   glUseProgram(shader_program);
 }
 
-int Shader::get_uniform_location(const char* uniform) {
+int Shader::get_uniform_location(const char* uniform) const {
   return glGetUniformLocation(shader_program, uniform);
 }
 
