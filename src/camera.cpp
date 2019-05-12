@@ -78,3 +78,7 @@ void Camera::update_fov(float delta_y) {
 vec3 Camera::get_position() const {
   return position;
 }
+
+vec3 Camera::get_direction() const {
+  return forward;
+}
