@@ -5,12 +5,25 @@
 
 #include <glad/glad.h>
 
-Mesh::Mesh(const std::vector<Vertex>& vertices,
-           const std::vector<unsigned int>& indices,
-           const std::vector<Texture>& textures)
+Mesh::Mesh(std::vector<Vertex>&& vertices,
+           std::vector<unsigned int>&& indices,
+           Textures&& textures)
   : vertices(std::move(vertices)), indices(std::move(indices)), textures(std::move(textures))
 {
   setup_mesh();
+}
+
+Mesh::Mesh(Mesh&& other)
+  : vertices(std::move(other.vertices)),
+    indices(std::move(other.indices)),
+    textures(std::move(other.textures)),
+    VAO(other.VAO),
+    VBO(other.VBO),
+    EBO(other.EBO)
+{
+  other.VAO = 0;
+  other.VBO = 0;
+  other.EBO = 0;
 }
 
 Mesh::~Mesh()
@@ -20,26 +33,9 @@ Mesh::~Mesh()
   glDeleteVertexArrays(1, &VAO);
 }
 
-void Mesh::draw(const Shader& shader)
+void Mesh::draw(const Shader& shader) const
 {
-  unsigned int num_diffuse = 1;
-  unsigned int num_specular = 1;
-
-  for (unsigned int i = 0; i < textures.size(); i++) {
-    glActiveTexture(GL_TEXTURE0 + i);
-    std::string number;
-    std::string name = textures[i].type;
-
-    if (name == "texture_diffuse") {
-      number = std::to_string(num_diffuse++);
-    } else if (name == "texture_specular") {
-      number = std::to_string(num_specular++);
-    } else {
-      throw Exception::DisplayException("Invalid texture type");
-    }
-
-    glUniform1f(shader.get_uniform_location((name + number).c_str()), i);
-  }
+  textures.use_textures(shader);
 
   glBindVertexArray(VAO);
   glDrawElements(GL_TRIANGLES, static_cast<int>(indices.size()),

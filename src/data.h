@@ -39,7 +39,7 @@ static const float VERTICES[] = {
   -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
 };
 
-static const unsigned int INDICIES[] = {
+static const unsigned int INDICES[] = {
   2, 3, 0, 2, 1, 0,
   6, 7, 4, 6, 5, 4,
   10, 11, 8, 10, 9, 8,
@@ -48,7 +48,7 @@ static const unsigned int INDICIES[] = {
   22, 23, 20, 22, 21, 20,
 };
 
-static const unsigned int NUM_INDICES = sizeof (INDICIES) / sizeof (unsigned int);
+static const unsigned int NUM_INDICES = sizeof (INDICES) / sizeof (unsigned int);
 
 static const unsigned int NUM_CUBES = 10;
 

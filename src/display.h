@@ -7,7 +7,8 @@
 
 #include "camera.h"
 #include "shader.h"
-#include "texture.h"
+#include "textures.h"
+#include "model.h"
 
 typedef glm::vec3 vec3;
 
@@ -28,8 +29,10 @@ private:
 
   std::unique_ptr<Shader> shaders;
   std::unique_ptr<Shader> light_shaders;
+  std::unique_ptr<Shader> model_shaders;
   std::shared_ptr<Camera> camera;
-  Texture textures;
+  Textures textures;
+  Model model;
 };
 
 #endif // DISPLAY_H

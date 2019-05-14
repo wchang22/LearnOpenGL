@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 #include "shader.h"
+#include "textures.h"
 
 typedef glm::vec3 vec3;
 typedef glm::vec2 vec2;
@@ -20,20 +21,15 @@ public:
     vec2 texture_coords;
   };
 
-  struct Texture {
-    unsigned int id;
-    std::string type;
-  };
-
-  Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices,
-       const std::vector<Texture>& textures);
+  Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned int>&& indices, Textures&& textures);
+  Mesh(Mesh&& other);
   ~Mesh();
 
-  void draw(const Shader& shader);
+  void draw(const Shader& shader) const;
 
   std::vector<Vertex> vertices;
   std::vector<unsigned int> indices;
-  std::vector<Texture> textures;
+  Textures textures;
 
 private:
   void setup_mesh();
