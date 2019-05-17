@@ -20,19 +20,21 @@ public:
   void draw() const;
 
 private:
-  unsigned int VAO, VBO, EBO, light_VAO;
+  unsigned int cubeVAO, cubeVBO, planeVAO, planeVBO, transparentVAO, transparentVBO;
 
   static void* buffer_offset(int offset);
   void init_buffers();
   void init_textures();
   void init_shaders();
+  void draw_cubes() const;
+  void draw_floor() const;
+  void draw_transparent() const;
 
   std::unique_ptr<Shader> shaders;
-  std::unique_ptr<Shader> light_shaders;
-  std::unique_ptr<Shader> model_shaders;
   std::shared_ptr<Camera> camera;
-  Textures textures;
-  Model model;
+  Textures metal_texture;
+  Textures marble_texture;
+  Textures transparent_texture;
 };
 
 #endif // DISPLAY_H
