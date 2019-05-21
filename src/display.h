@@ -11,6 +11,7 @@
 #include "model.h"
 
 typedef glm::vec3 vec3;
+typedef glm::mat3 mat3;
 
 class Display {
 public:
@@ -21,6 +22,7 @@ public:
 
 private:
   unsigned int cubeVAO, cubeVBO, planeVAO, planeVBO, transparentVAO, transparentVBO;
+  unsigned int skyboxVAO, skyboxVBO;
 
   static void* buffer_offset(int offset);
   void init_buffers();
@@ -29,12 +31,15 @@ private:
   void draw_cubes() const;
   void draw_floor() const;
   void draw_transparent() const;
+  void draw_skybox() const;
 
   std::unique_ptr<Shader> shaders;
+  std::unique_ptr<Shader> skybox_shaders;
   std::shared_ptr<Camera> camera;
   Textures metal_texture;
   Textures marble_texture;
   Textures transparent_texture;
+  Textures cubemap_texture;
 };
 
 #endif // DISPLAY_H

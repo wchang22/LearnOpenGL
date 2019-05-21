@@ -16,6 +16,7 @@ public:
   Textures(Textures&& other);
 
   void load_texture_from_image(const char* path, const std::string& type);
+  void load_cubemap(const std::vector<std::string>& faces);
   void use_textures(const Shader& shader) const;
   void append(Textures&& other);
 

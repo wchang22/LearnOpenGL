@@ -64,7 +64,7 @@ static float planeVertices[] = {
      5.0f, -0.5f, -5.0f,  2.0f, 2.0f
 };
 
-float transparentVertices[] = {
+static float transparentVertices[] = {
     // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
     0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
     0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
@@ -81,6 +81,51 @@ static std::vector<vec3> transparent {
   vec3( 0.0f,  0.0f,  0.7f),
   vec3(-0.3f,  0.0f, -2.3f),
   vec3( 0.5f,  0.0f, -0.6f),
+};
+
+static float skyboxVertices[] = {
+  // positions
+  -1.0f,  1.0f, -1.0f,
+  -1.0f, -1.0f, -1.0f,
+   1.0f, -1.0f, -1.0f,
+   1.0f, -1.0f, -1.0f,
+   1.0f,  1.0f, -1.0f,
+  -1.0f,  1.0f, -1.0f,
+
+  -1.0f, -1.0f,  1.0f,
+  -1.0f, -1.0f, -1.0f,
+  -1.0f,  1.0f, -1.0f,
+  -1.0f,  1.0f, -1.0f,
+  -1.0f,  1.0f,  1.0f,
+  -1.0f, -1.0f,  1.0f,
+
+   1.0f, -1.0f, -1.0f,
+   1.0f, -1.0f,  1.0f,
+   1.0f,  1.0f,  1.0f,
+   1.0f,  1.0f,  1.0f,
+   1.0f,  1.0f, -1.0f,
+   1.0f, -1.0f, -1.0f,
+
+  -1.0f, -1.0f,  1.0f,
+  -1.0f,  1.0f,  1.0f,
+   1.0f,  1.0f,  1.0f,
+   1.0f,  1.0f,  1.0f,
+   1.0f, -1.0f,  1.0f,
+  -1.0f, -1.0f,  1.0f,
+
+  -1.0f,  1.0f, -1.0f,
+   1.0f,  1.0f, -1.0f,
+   1.0f,  1.0f,  1.0f,
+   1.0f,  1.0f,  1.0f,
+  -1.0f,  1.0f,  1.0f,
+  -1.0f,  1.0f, -1.0f,
+
+  -1.0f, -1.0f, -1.0f,
+  -1.0f, -1.0f,  1.0f,
+   1.0f, -1.0f, -1.0f,
+   1.0f, -1.0f, -1.0f,
+  -1.0f, -1.0f,  1.0f,
+   1.0f, -1.0f,  1.0f
 };
 
 #endif // DATA_H
