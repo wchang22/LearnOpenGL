@@ -1,8 +1,9 @@
 #version 450 core
 layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec2 aTexCoords;
+layout (location = 1) in vec3 aNormal;
 
-out vec2 TexCoords;
+out vec3 normal;
+out vec3 position;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -10,7 +11,8 @@ uniform mat4 perspective;
 
 void main()
 {
-    TexCoords = aTexCoords;
+    position = vec3(model * vec4(aPos, 1.0));
+    normal = inverse(transpose(mat3(model))) * aNormal;
     gl_Position = perspective * view * model * vec4(aPos, 1.0);
 }
 

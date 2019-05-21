@@ -13,10 +13,9 @@ Display::Display(std::shared_ptr<Camera> camera)
   : shaders(nullptr),
     skybox_shaders(nullptr),
     camera(camera),
-    metal_texture(),
-    marble_texture(),
-    transparent_texture(),
-    cubemap_texture()
+    textures(),
+    model_nanosuit("../../assets/nanosuit/nanosuit.obj"),
+    model_aircraft("../../assets/aircraft/aircraft.obj")
 {
   srand(static_cast<unsigned int>(time(nullptr)));
 
@@ -42,9 +41,9 @@ void Display::draw() const {
   glUniformMatrix4fv(shaders->get_uniform_location("view"), 1, GL_FALSE, &view[0][0]);
   glUniformMatrix4fv(shaders->get_uniform_location("perspective"), 1, GL_FALSE, &perspective[0][0]);
 
+  draw_model();
   draw_cubes();
   draw_floor();
-  draw_transparent();
   draw_skybox();
 }
 
@@ -70,25 +69,14 @@ void Display::init_buffers() {
   glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof (float), buffer_offset(0));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof (float), buffer_offset(0));
   glEnableVertexAttribArray(0);
 
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof (float), buffer_offset(3 * sizeof(float)));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof (float), buffer_offset(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
-  glGenVertexArrays(1, &transparentVAO);
-  glGenBuffers(1, &transparentVBO);
-
-
-  glBindVertexArray(transparentVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof (float), buffer_offset(0));
-  glEnableVertexAttribArray(0);
-
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof (float), buffer_offset(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof (float), buffer_offset(6 * sizeof(float)));
+  glEnableVertexAttribArray(2);
 
 
   glGenVertexArrays(1, &skyboxVAO);
@@ -107,10 +95,8 @@ void Display::init_buffers() {
 }
 
 void Display::init_textures() {
-  marble_texture.load_texture_from_image("../../assets/marble.jpg", "texture_diffuse");
-  metal_texture.load_texture_from_image("../../assets/metal.jpg", "texture_diffuse");
-  transparent_texture.load_texture_from_image("../../assets/blending_transparent_window.png", "texture_diffuse");
-  cubemap_texture.load_cubemap({
+  textures.load_texture_from_image("../../assets/metal.jpg", "texture_diffuse");
+  textures.load_cubemap({
     "../../assets/skybox/right.jpg",
     "../../assets/skybox/left.jpg",
     "../../assets/skybox/top.jpg",
@@ -130,7 +116,7 @@ void Display::init_shaders() {
 void Display::draw_cubes() const
 {
   glBindVertexArray(cubeVAO);
-  metal_texture.use_textures(*shaders);
+  textures.use_textures(*shaders);
   mat4 model(1.0f);
 
   model = glm::translate(model, vec3(-1.0f, 0.0f, -1.0f));
@@ -139,35 +125,36 @@ void Display::draw_cubes() const
 
   model = glm::translate(mat4(1.0f), vec3(2.0f, 0.0f, 0.0f));
   glUniformMatrix4fv(shaders->get_uniform_location("model"), 1, GL_FALSE, &model[0][0]);
+
+  glUniform3fv(shaders->get_uniform_location("cameraPos"), 1, &camera->get_position()[0]);
+
   glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
 void Display::draw_floor() const
 {
   glBindVertexArray(planeVAO);
-  marble_texture.use_textures(*shaders);
+  textures.use_textures(*shaders);
 
   mat4 model(1.0f);
   glUniformMatrix4fv(shaders->get_uniform_location("model"), 1, GL_FALSE, &model[0][0]);
   glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void Display::draw_transparent() const
+void Display::draw_model() const
 {
-  std::map<float, vec3, std::greater<float>> positions;
+  float time = static_cast<float>(glfwGetTime());
+  mat4 model_mat = glm::scale(mat4(1.0f), vec3(0.2f, 0.2, 0.2f));
+  model_mat = glm::translate(model_mat, vec3(0.0f, 8.0f, 0.0f));
+  model_mat = glm::rotate(model_mat, time, vec3(0.0f, 1.0f, 0.0f));
+  glUniformMatrix4fv(shaders->get_uniform_location("model"), 1, GL_FALSE, &model_mat[0][0]);
+  model_nanosuit.draw(*shaders);
 
-  for (const vec3& position: transparent) {
-    float distance = glm::distance(camera->get_position(), position);
-    positions[distance] = position;
-  }
-
-  glBindVertexArray(transparentVAO);
-  transparent_texture.use_textures(*shaders);
-  for (auto& it : positions) {
-    mat4 model = glm::translate(mat4(1.0f), it.second);
-    glUniformMatrix4fv(shaders->get_uniform_location("model"), 1, GL_FALSE, &model[0][0]);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-  }
+  model_mat = glm::scale(mat4(1.0f), vec3(0.8f, 0.8, 0.8f));
+  model_mat = glm::translate(model_mat, vec3(0.0f, 2.0f, 0.0f));
+  model_mat = glm::rotate(model_mat, glm::radians(180.0f) + time, vec3(0.0f, 1.0f, 0.0f));
+  glUniformMatrix4fv(shaders->get_uniform_location("model"), 1, GL_FALSE, &model_mat[0][0]);
+  model_aircraft.draw(*shaders);
 }
 
 void Display::draw_skybox() const
@@ -181,7 +168,7 @@ void Display::draw_skybox() const
   glUniformMatrix4fv(skybox_shaders->get_uniform_location("view"), 1, GL_FALSE, &view[0][0]);
   glUniformMatrix4fv(skybox_shaders->get_uniform_location("perspective"), 1, GL_FALSE, &perspective[0][0]);
 
-  cubemap_texture.use_textures(*skybox_shaders);
+  textures.use_textures(*skybox_shaders);
 
   glBindVertexArray(skyboxVAO);
   glDrawArrays(GL_TRIANGLES, 0, 36);

@@ -21,7 +21,7 @@ public:
   void draw() const;
 
 private:
-  unsigned int cubeVAO, cubeVBO, planeVAO, planeVBO, transparentVAO, transparentVBO;
+  unsigned int cubeVAO, cubeVBO, planeVAO, planeVBO;
   unsigned int skyboxVAO, skyboxVBO;
 
   static void* buffer_offset(int offset);
@@ -30,16 +30,15 @@ private:
   void init_shaders();
   void draw_cubes() const;
   void draw_floor() const;
-  void draw_transparent() const;
+  void draw_model() const;
   void draw_skybox() const;
 
   std::unique_ptr<Shader> shaders;
   std::unique_ptr<Shader> skybox_shaders;
   std::shared_ptr<Camera> camera;
-  Textures metal_texture;
-  Textures marble_texture;
-  Textures transparent_texture;
-  Textures cubemap_texture;
+  Textures textures;
+  Model model_nanosuit;
+  Model model_aircraft;
 };
 
 #endif // DISPLAY_H
