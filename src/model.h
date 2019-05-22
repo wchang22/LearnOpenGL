@@ -17,6 +17,8 @@ public:
 
   void draw(const Shader& shader) const;
 
+  std::vector<Mesh> meshes;
+
 private:
   void load_model(const std::string& path);
   void process_node(aiNode* node, const aiScene* scene);
@@ -24,7 +26,6 @@ private:
   Textures load_material_textures(aiMaterial* material, aiTextureType type,
                                               const std::string& type_name);
 
-  std::vector<Mesh> meshes;
   std::string directory;
 };
 

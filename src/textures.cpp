@@ -126,6 +126,7 @@ void Textures::load_cubemap(const std::vector<std::string>& faces)
 void Textures::use_textures(const Shader& shader) const {
   unsigned int num_diffuse = 1;
   unsigned int num_specular = 1;
+  unsigned int num_reflection = 1;
   unsigned int num_cubemap = 1;
 
   for (unsigned int i = 0; i < texture_ids.size(); i++) {
@@ -137,6 +138,8 @@ void Textures::use_textures(const Shader& shader) const {
       number = std::to_string(num_diffuse++);
     } else if (name == "texture_specular") {
       number = std::to_string(num_specular++);
+    } else if (name == "texture_reflection") {
+      number = std::to_string(num_reflection++);
     } else if (name == "texture_cubemap") {
       number = std::to_string(num_cubemap++);
     } else {
@@ -169,4 +172,20 @@ void Textures::append(Textures&& other)
                        std::make_move_iterator(other.texture_types.end()));
 
   other.texture_ids.clear();
+}
+
+void Textures::append(const Textures& other)
+{
+  texture_ids.reserve(other.texture_ids.size());
+  texture_ids.insert(texture_ids.end(),
+                     other.texture_ids.begin(),
+                     other.texture_ids.end());
+  texture_paths.reserve(other.texture_paths.size());
+  texture_paths.insert(texture_paths.end(),
+                       other.texture_paths.begin(),
+                       other.texture_paths.end());
+  texture_types.reserve(other.texture_types.size());
+  texture_types.insert(texture_types.end(),
+                       other.texture_types.begin(),
+                       other.texture_types.end());
 }

@@ -10,10 +10,8 @@ uniform samplerCube texture_cubemap1;
 void main()
 {
     vec3 I = normalize(position - cameraPos);
-    vec3 R = refract(I, normalize(normal), 1.0 / 1.52);
-    vec3 reflect = reflect(I, normalize(normal));
+    vec3 R = reflect(I, normalize(normal));
 
-    FragColor = vec4(texture(texture_cubemap1, R).rgb, 1.0) +
-                vec4(texture(texture_cubemap1, reflect).rgb, 1.0);
+    FragColor = vec4(texture(texture_cubemap1, R).rgb, 1.0);
 }
 

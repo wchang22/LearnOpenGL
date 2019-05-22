@@ -19,6 +19,7 @@ public:
   void load_cubemap(const std::vector<std::string>& faces);
   void use_textures(const Shader& shader) const;
   void append(Textures&& other);
+  void append(const Textures& other);
 
 private:
   std::vector<GLuint> texture_ids;

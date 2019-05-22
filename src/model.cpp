@@ -81,9 +81,12 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
                                                  "texture_diffuse");
   Textures specular_maps = load_material_textures(material, aiTextureType_SPECULAR,
                                                   "texture_specular");
+  Textures reflection_maps = load_material_textures(material, aiTextureType_AMBIENT,
+                                                  "texture_reflection");
 
   textures.append(std::move(diffuse_maps));
   textures.append(std::move(specular_maps));
+  textures.append(std::move(reflection_maps));
 
   return Mesh(std::move(vertices), std::move(indices), std::move(textures));
 }
