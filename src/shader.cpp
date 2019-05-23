@@ -18,7 +18,8 @@ Shader::Shader(const char* path_vertex, const char* path_fragment) {
 
   if (!check_shader_errors(vertex_shader)) {
     glDeleteShader(vertex_shader);
-    throw Exception::ShaderException("Failed to compile vertex shader, check above log");
+    throw Exception::ShaderException(("Failed to compile " + std::string(path_vertex) +
+                                     ", check above log").c_str());
   }
 
   fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -28,7 +29,8 @@ Shader::Shader(const char* path_vertex, const char* path_fragment) {
   if (!check_shader_errors(fragment_shader)) {
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
-    throw Exception::ShaderException("Failed to compile fragment shader, check above log");
+    throw Exception::ShaderException(("Failed to compile " + std::string(path_fragment) +
+                                      ", check above log").c_str());
   }
 
   shader_program = glCreateProgram();

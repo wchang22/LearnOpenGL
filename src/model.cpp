@@ -13,9 +13,11 @@ Model::Model(const char* path)
 
 void Model::draw(const Shader& shader) const
 {
+  glEnable(GL_CULL_FACE);
   for (const Mesh& mesh : meshes) {
     mesh.draw(shader);
   }
+  glDisable(GL_CULL_FACE);
 }
 
 void Model::load_model(const std::string& path)
