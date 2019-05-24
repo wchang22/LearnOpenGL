@@ -5,7 +5,7 @@
 
 class Shader {
 public:
-  Shader(const char* path_vertex, const char* path_fragment);
+  Shader(const char* path_vertex, const char* path_fragment, const char* path_geometry = nullptr);
   ~Shader();
 
   void use_shader_program();
@@ -18,6 +18,7 @@ private:
 
   unsigned int vertex_shader;
   unsigned int fragment_shader;
+  unsigned int geometry_shader = 0;
   unsigned int shader_program;
 };
 

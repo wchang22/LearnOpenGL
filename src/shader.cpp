@@ -6,7 +6,7 @@
 
 #include <glad/glad.h>
 
-Shader::Shader(const char* path_vertex, const char* path_fragment) {
+Shader::Shader(const char* path_vertex, const char* path_fragment, const char* path_geometry) {
   std::string vertex_source = read_source(path_vertex);
   std::string fragment_source = read_source(path_fragment);
   const char* vertex_source_cstr = vertex_source.c_str();
@@ -17,7 +17,6 @@ Shader::Shader(const char* path_vertex, const char* path_fragment) {
   glCompileShader(vertex_shader);
 
   if (!check_shader_errors(vertex_shader)) {
-    glDeleteShader(vertex_shader);
     throw Exception::ShaderException(("Failed to compile " + std::string(path_vertex) +
                                      ", check above log").c_str());
   }
@@ -27,21 +26,33 @@ Shader::Shader(const char* path_vertex, const char* path_fragment) {
   glCompileShader(fragment_shader);
 
   if (!check_shader_errors(fragment_shader)) {
-    glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader);
     throw Exception::ShaderException(("Failed to compile " + std::string(path_fragment) +
                                       ", check above log").c_str());
   }
 
   shader_program = glCreateProgram();
+
+  if (path_geometry) {
+    std::string geometry_source = read_source(path_geometry);
+    const char* geometry_source_cstr = geometry_source.c_str();
+
+    geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
+    glShaderSource(geometry_shader, 1, &geometry_source_cstr, nullptr);
+    glCompileShader(geometry_shader);
+
+    if (!check_shader_errors(geometry_shader)) {
+      throw Exception::ShaderException(("Failed to compile " + std::string(path_geometry) +
+                                        ", check above log").c_str());
+    }
+
+    glAttachShader(shader_program, geometry_shader);
+  }
+
   glAttachShader(shader_program, vertex_shader);
   glAttachShader(shader_program, fragment_shader);
   glLinkProgram(shader_program);
 
   if (!check_program_errors(shader_program)) {
-    glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader);
-    glDeleteProgram(shader_program);
     throw Exception::ShaderException("Failed to link shaders, check above log");
   }
 }
@@ -49,6 +60,7 @@ Shader::Shader(const char* path_vertex, const char* path_fragment) {
 Shader::~Shader() {
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
+  glDeleteShader(geometry_shader);
   glDeleteProgram(shader_program);
 }
 
