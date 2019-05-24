@@ -28,6 +28,7 @@ Display::~Display() {
   glDeleteBuffers(1, &planeVBO);
   glDeleteBuffers(1, &cubeVBO);
   glDeleteBuffers(1, &skyboxVBO);
+  glDeleteBuffers(1, &UBO);
   glDeleteVertexArrays(1, &planeVAO);
   glDeleteVertexArrays(1, &cubeVAO);
   glDeleteVertexArrays(1, &skyboxVAO);
@@ -37,9 +38,10 @@ void Display::draw() const {
   mat4 view = camera->lookat();
   mat4 perspective = camera->perspective();
 
-  shaders->use_shader_program();
-  glUniformMatrix4fv(shaders->get_uniform_location("view"), 1, GL_FALSE, &view[0][0]);
-  glUniformMatrix4fv(shaders->get_uniform_location("perspective"), 1, GL_FALSE, &perspective[0][0]);
+  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), &view[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), &perspective[0][0]);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   draw_model();
   draw_cubes();
@@ -90,8 +92,15 @@ void Display::init_buffers() {
   glEnableVertexAttribArray(0);
 
 
+  glGenBuffers(1, &UBO);
+  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+  glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(mat4), nullptr, GL_STATIC_DRAW);
+  glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBO, 0, 2 * sizeof (mat4));
+
+
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void Display::init_textures() {
@@ -133,7 +142,7 @@ void Display::draw_cubes() const
   model = glm::translate(mat4(1.0f), vec3(2.0f, 0.0f, 0.0f));
   glUniformMatrix4fv(shaders->get_uniform_location("model"), 1, GL_FALSE, &model[0][0]);
 
-  glUniform3fv(shaders->get_uniform_location("cameraPos"), 1, &camera->get_position()[0]);
+  glUniform3fv(shaders->get_uniform_location("view_position"), 1, &camera->get_position()[0]);
 
   glDrawArrays(GL_TRIANGLES, 0, 36);
 }
@@ -153,9 +162,6 @@ void Display::draw_floor() const
 void Display::draw_model() const
 {
   model_shaders->use_shader_program();
-
-  glUniformMatrix4fv(model_shaders->get_uniform_location("view"), 1, GL_FALSE, &camera->lookat()[0][0]);
-  glUniformMatrix4fv(model_shaders->get_uniform_location("perspective"), 1, GL_FALSE, &camera->perspective()[0][0]);
 
   struct DirLight {
     vec3 direction;
@@ -222,13 +228,13 @@ void Display::draw_skybox() const
   glDepthFunc(GL_LEQUAL);
 
   mat4 view = mat4(mat3(camera->lookat()));
-  mat4 perspective = camera->perspective();
 
   skybox_shaders->use_shader_program();
-  glUniformMatrix4fv(skybox_shaders->get_uniform_location("view"), 1, GL_FALSE, &view[0][0]);
-  glUniformMatrix4fv(skybox_shaders->get_uniform_location("perspective"), 1, GL_FALSE, &perspective[0][0]);
-
   textures.use_textures(*skybox_shaders);
+
+  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), &view[0][0]);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   glBindVertexArray(skyboxVAO);
   glDrawArrays(GL_TRIANGLES, 0, 36);

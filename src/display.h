@@ -23,6 +23,7 @@ public:
 private:
   unsigned int cubeVAO, cubeVBO, planeVAO, planeVBO;
   unsigned int skyboxVAO, skyboxVBO;
+  unsigned int UBO;
 
   static void* buffer_offset(int offset);
   void init_buffers();

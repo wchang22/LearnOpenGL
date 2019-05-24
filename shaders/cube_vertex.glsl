@@ -6,8 +6,12 @@ out vec3 normal;
 out vec3 position;
 
 uniform mat4 model;
-uniform mat4 view;
-uniform mat4 perspective;
+
+layout (std140, binding = 0) uniform Matrices {
+    uniform mat4 view;
+    uniform mat4 perspective;
+};
+
 
 void main()
 {

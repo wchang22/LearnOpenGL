@@ -8,8 +8,11 @@ out vec3 position;
 out vec2 texture_coords;
 
 uniform mat4 model;
-uniform mat4 view;
-uniform mat4 perspective;
+
+layout (std140, binding = 0) uniform Matrices {
+    uniform mat4 view;
+    uniform mat4 perspective;
+};
 
 void main() {
     position = vec3(model * vec4(in_position, 1.0));
