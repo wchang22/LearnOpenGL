@@ -13,7 +13,6 @@ Display::Display(std::shared_ptr<Camera> camera)
   : shaders(nullptr),
     skybox_shaders(nullptr),
     model_shaders(nullptr),
-    model_geo_shaders(nullptr),
     camera(camera),
     textures(),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj")
@@ -44,7 +43,6 @@ void Display::draw() const {
   glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), &perspective[0][0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-  draw_model(*model_geo_shaders);
   draw_model(*model_shaders);
   draw_cubes();
   draw_floor();
@@ -124,9 +122,7 @@ void Display::init_shaders() {
   shaders = std::make_unique<Shader>("../../shaders/cube_vertex.glsl",
                                      "../../shaders/cube_fragment.glsl");
   model_shaders = std::make_unique<Shader>("../../shaders/model_vertex.glsl",
-                                           "../../shaders/model_fragment.glsl");
-  model_geo_shaders = std::make_unique<Shader>("../../shaders/model_vertex.glsl",
-                                           "../../shaders/normal_fragment.glsl",
+                                           "../../shaders/model_fragment.glsl",
                                            "../../shaders/model_geometry.glsl");
   skybox_shaders = std::make_unique<Shader>("../../shaders/skybox_vertex.glsl",
                                             "../../shaders/skybox_fragment.glsl");

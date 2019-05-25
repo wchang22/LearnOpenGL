@@ -1,15 +1,13 @@
 #version 450 core
 
 layout (triangles) in;
-layout (line_strip, max_vertices = 6) out;
+layout (triangle_strip, max_vertices = 3) out;
 
 in V_DATA {
     vec3 normal;
     vec3 position;
     vec2 texture_coords;
 } gs_in[];
-
-in vec3 c_normal[];
 
 out V_DATA {
     out vec3 normal;
@@ -33,23 +31,17 @@ vec4 explode(vec4 position, vec3 normal) {
 }
 
 void gen_vertex(int index) {
-    gl_Position = gl_in[index].gl_Position;
+    gl_Position = explode(gl_in[index].gl_Position, get_normal());
     gs_out.normal = gs_in[index].normal;
     gs_out.position = gs_in[index].position;
     gs_out.texture_coords = gs_in[index].texture_coords;
     EmitVertex();
-
-    gl_Position = gl_in[index].gl_Position + vec4(c_normal[index], 0.0) * 0.1;
-    gs_out.normal = gs_in[index].normal;
-    gs_out.position = gs_in[index].position;
-    gs_out.texture_coords = gs_in[index].texture_coords;
-    EmitVertex();
-
-    EndPrimitive();
 }
 
 void main() {
     for (int i = 0; i < 3; i++) {
         gen_vertex(i);
     }
+
+    EndPrimitive();
 }

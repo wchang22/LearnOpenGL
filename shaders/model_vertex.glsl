@@ -9,8 +9,6 @@ out V_DATA {
     vec2 texture_coords;
 } vs_out;
 
-out vec3 c_normal;
-
 uniform mat4 model;
 
 layout (std140, binding = 0) uniform Matrices {
@@ -24,5 +22,4 @@ void main() {
     vs_out.texture_coords = in_texture_coords;
 
     gl_Position = perspective * view * model * vec4(in_position, 1.0);
-    c_normal = normalize(vec3(perspective * transpose(inverse(view * model)) * vec4(in_normal, 0.0)));
 }

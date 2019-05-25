@@ -15,7 +15,9 @@ Window::Window()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
+  const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+  window = glfwCreateWindow(static_cast<int>(mode->height * 4.0 / 3.0),
+                            mode->height, "LearnOpenGL", glfwGetPrimaryMonitor(), nullptr);
 
   if (!window) {
     glfwDestroyWindow(window);
@@ -36,8 +38,13 @@ Window::Window()
   glfwSetScrollCallback(window, scroll_callback);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-  display = std::make_unique<Display>(camera);
-
+  try {
+    display = std::make_unique<Display>(camera);
+  } catch (std::runtime_error e) {
+    std::exception_ptr ptr = std::current_exception();
+    glfwDestroyWindow(window);
+    std::rethrow_exception(ptr);
+  }
 }
 
 Window::~Window() {
@@ -50,19 +57,25 @@ void Window::main_loop() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  while (!glfwWindowShouldClose(window)) {
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  try {
+    while (!glfwWindowShouldClose(window)) {
+      glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    camera->update_frames();
-    camera->update_fov(delta_fovy);
-    delta_fovy = 0.0f;
-    display->draw();
+      camera->update_frames();
+      camera->update_fov(delta_fovy);
+      delta_fovy = 0.0f;
+      display->draw();
 
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-    key_callback();
-    mouse_callback();
+      glfwSwapBuffers(window);
+      glfwPollEvents();
+      key_callback();
+      mouse_callback();
+    }
+  } catch (std::runtime_error e) {
+    std::exception_ptr ptr = std::current_exception();
+    glfwDestroyWindow(window);
+    std::rethrow_exception(ptr);
   }
 }
 

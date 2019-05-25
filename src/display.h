@@ -37,7 +37,6 @@ private:
   std::unique_ptr<Shader> shaders;
   std::unique_ptr<Shader> skybox_shaders;
   std::unique_ptr<Shader> model_shaders;
-  std::unique_ptr<Shader> model_geo_shaders;
   std::shared_ptr<Camera> camera;
   Textures textures;
   Model model_nanosuit;
