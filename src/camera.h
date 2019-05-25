@@ -30,9 +30,10 @@ public:
   vec3 get_position() const;
   vec3 get_direction() const;
 
-private:
   vec3 position;
   vec3 forward;
+
+private:
   vec3 up;
 
   float speed;
