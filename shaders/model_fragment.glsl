@@ -24,9 +24,11 @@ struct PointLight {
     vec3 attenuation;
 };
 
-in vec3 normal;
-in vec3 position;
-in vec2 texture_coords;
+in V_DATA {
+    in vec3 normal;
+    in vec3 position;
+    in vec2 texture_coords;
+} fs_in;
 
 out vec4 frag_color;
 
@@ -73,18 +75,18 @@ vec3 calc_reflection(vec3 reflection_texture, vec3 eye_direction, vec3 normal) {
 }
 
 void main() {
-    vec3 normal = normalize(normal);
-    vec3 eye_direction = normalize(view_position - position);
+    vec3 normal = normalize(fs_in.normal);
+    vec3 eye_direction = normalize(view_position - fs_in.position);
 
-    vec3 diffuse_texture = texture(texture_diffuse1, texture_coords).rgb;
-    vec3 specular_texture = texture(texture_specular1, texture_coords).rgb;
-    vec3 reflection_texture = texture(texture_reflection1, texture_coords).rgb;
+    vec3 diffuse_texture = texture(texture_diffuse1, fs_in.texture_coords).rgb;
+    vec3 specular_texture = texture(texture_specular1, fs_in.texture_coords).rgb;
+    vec3 reflection_texture = texture(texture_reflection1, fs_in.texture_coords).rgb;
 
     vec3 color = calc_dir_light(dir_light, normal, eye_direction,
                                 diffuse_texture, specular_texture, material_shininess);
 
     for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
-        color += calc_point_light(point_light[i], normal, position, eye_direction,
+        color += calc_point_light(point_light[i], normal, fs_in.position, eye_direction,
                                   diffuse_texture, specular_texture, material_shininess);
     }
 

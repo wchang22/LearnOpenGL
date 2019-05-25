@@ -8,7 +8,7 @@ public:
   Shader(const char* path_vertex, const char* path_fragment, const char* path_geometry = nullptr);
   ~Shader();
 
-  void use_shader_program();
+  void use_shader_program() const;
   int get_uniform_location(const char* uniform) const;
 
 private:

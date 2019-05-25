@@ -13,6 +13,7 @@ Display::Display(std::shared_ptr<Camera> camera)
   : shaders(nullptr),
     skybox_shaders(nullptr),
     model_shaders(nullptr),
+    model_geo_shaders(nullptr),
     camera(camera),
     textures(),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj")
@@ -35,12 +36,6 @@ Display::~Display() {
 }
 
 void Display::draw() const {
-  float time = static_cast<float>(glfwGetTime());
-  camera->position.y = 3;
-  camera->position.x = 6 * sin(time / 5);
-  camera->position.z = 6 * cos(time / 5);
-  camera->forward = vec3(0, 1, 0) - camera->position;
-
   mat4 view = camera->lookat();
   mat4 perspective = camera->perspective();
 
@@ -49,8 +44,9 @@ void Display::draw() const {
   glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), &perspective[0][0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-  draw_model();
-  //draw_cubes();
+  draw_model(*model_geo_shaders);
+  draw_model(*model_shaders);
+  draw_cubes();
   draw_floor();
   draw_skybox();
 }
@@ -128,7 +124,9 @@ void Display::init_shaders() {
   shaders = std::make_unique<Shader>("../../shaders/cube_vertex.glsl",
                                      "../../shaders/cube_fragment.glsl");
   model_shaders = std::make_unique<Shader>("../../shaders/model_vertex.glsl",
-                                           "../../shaders/model_fragment.glsl",
+                                           "../../shaders/model_fragment.glsl");
+  model_geo_shaders = std::make_unique<Shader>("../../shaders/model_vertex.glsl",
+                                           "../../shaders/normal_fragment.glsl",
                                            "../../shaders/model_geometry.glsl");
   skybox_shaders = std::make_unique<Shader>("../../shaders/skybox_vertex.glsl",
                                             "../../shaders/skybox_fragment.glsl");
@@ -168,9 +166,9 @@ void Display::draw_floor() const
   glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void Display::draw_model() const
+void Display::draw_model(const Shader& shader) const
 {
-  model_shaders->use_shader_program();
+  shader.use_shader_program();
   float time = static_cast<float>(glfwGetTime());
 
   struct DirLight {
@@ -201,14 +199,14 @@ void Display::draw_model() const
     vec3(1.0f, 0.09f, 0.032f),
   };
 
-  glUniform1f(model_shaders->get_uniform_location("time"), time);
+  glUniform1f(shader.get_uniform_location("time"), time);
 
-  glUniform3fv(model_shaders->get_uniform_location("view_position"), 1, &camera->get_position()[0]);
+  glUniform3fv(shader.get_uniform_location("view_position"), 1, &camera->get_position()[0]);
 
-  glUniform3fv(model_shaders->get_uniform_location("dir_light.direction"), 1, &dir_light.direction[0]);
-  glUniform3fv(model_shaders->get_uniform_location("dir_light.ambient"), 1, &dir_light.ambient[0]);
-  glUniform3fv(model_shaders->get_uniform_location("dir_light.diffuse"), 1, &dir_light.diffuse[0]);
-  glUniform3fv(model_shaders->get_uniform_location("dir_light.specular"), 1, &dir_light.specular[0]);
+  glUniform3fv(shader.get_uniform_location("dir_light.direction"), 1, &dir_light.direction[0]);
+  glUniform3fv(shader.get_uniform_location("dir_light.ambient"), 1, &dir_light.ambient[0]);
+  glUniform3fv(shader.get_uniform_location("dir_light.diffuse"), 1, &dir_light.diffuse[0]);
+  glUniform3fv(shader.get_uniform_location("dir_light.specular"), 1, &dir_light.specular[0]);
 
   for (unsigned int i = 0; i < NUM_POINT_LIGHTS; i++) {
     std::string point_light_str = "point_light[" + std::to_string(i) + "].";
@@ -218,20 +216,20 @@ void Display::draw_model() const
     std::string specular_str = point_light_str + "specular";
     std::string attenuation_str = point_light_str + "attenuation";
 
-    glUniform3fv(model_shaders->get_uniform_location(position_str.c_str()), 1, &POINT_LIGHT_POSITIONS[i][0]);
-    glUniform3fv(model_shaders->get_uniform_location(ambient_str.c_str()), 1, &point_light.ambient[0]);
-    glUniform3fv(model_shaders->get_uniform_location(diffuse_str.c_str()), 1, &point_light.diffuse[0]);
-    glUniform3fv(model_shaders->get_uniform_location(specular_str.c_str()), 1, &point_light.specular[0]);
-    glUniform3fv(model_shaders->get_uniform_location(attenuation_str.c_str()), 1, &point_light.attenuation[0]);
+    glUniform3fv(shader.get_uniform_location(position_str.c_str()), 1, &POINT_LIGHT_POSITIONS[i][0]);
+    glUniform3fv(shader.get_uniform_location(ambient_str.c_str()), 1, &point_light.ambient[0]);
+    glUniform3fv(shader.get_uniform_location(diffuse_str.c_str()), 1, &point_light.diffuse[0]);
+    glUniform3fv(shader.get_uniform_location(specular_str.c_str()), 1, &point_light.specular[0]);
+    glUniform3fv(shader.get_uniform_location(attenuation_str.c_str()), 1, &point_light.attenuation[0]);
   }
 
-  glUniform1f(model_shaders->get_uniform_location("material_shininess"), 64.0f);
+  glUniform1f(shader.get_uniform_location("material_shininess"), 64.0f);
 
   mat4 model_mat = glm::scale(mat4(1.0f), vec3(0.2f, 0.2, 0.2f));
   model_mat = glm::translate(model_mat, vec3(0.0f, -2.5f, 0.0f));
   //model_mat = glm::rotate(model_mat, time, vec3(0.0f, 1.0f, 0.0f));
-  glUniformMatrix4fv(model_shaders->get_uniform_location("model"), 1, GL_FALSE, &model_mat[0][0]);
-  model_nanosuit.draw(*model_shaders);
+  glUniformMatrix4fv(shader.get_uniform_location("model"), 1, GL_FALSE, &model_mat[0][0]);
+  model_nanosuit.draw(shader);
 }
 
 void Display::draw_skybox() const

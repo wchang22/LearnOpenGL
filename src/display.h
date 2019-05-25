@@ -31,12 +31,13 @@ private:
   void init_shaders();
   void draw_cubes() const;
   void draw_floor() const;
-  void draw_model() const;
+  void draw_model(const Shader& shader) const;
   void draw_skybox() const;
 
   std::unique_ptr<Shader> shaders;
   std::unique_ptr<Shader> skybox_shaders;
   std::unique_ptr<Shader> model_shaders;
+  std::unique_ptr<Shader> model_geo_shaders;
   std::shared_ptr<Camera> camera;
   Textures textures;
   Model model_nanosuit;

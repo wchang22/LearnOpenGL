@@ -64,7 +64,7 @@ Shader::~Shader() {
   glDeleteProgram(shader_program);
 }
 
-void Shader::use_shader_program() {
+void Shader::use_shader_program() const {
   glUseProgram(shader_program);
 }
 

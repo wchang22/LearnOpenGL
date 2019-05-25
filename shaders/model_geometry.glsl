@@ -1,17 +1,21 @@
 #version 450 core
 
 layout (triangles) in;
-layout (triangle_strip, max_vertices = 3) out;
+layout (line_strip, max_vertices = 6) out;
 
-in VS_OUT {
+in V_DATA {
     vec3 normal;
     vec3 position;
     vec2 texture_coords;
 } gs_in[];
 
-out vec3 normal;
-out vec3 position;
-out vec2 texture_coords;
+in vec3 c_normal[];
+
+out V_DATA {
+    out vec3 normal;
+    out vec3 position;
+    out vec2 texture_coords;
+} gs_out;
 
 uniform float time;
 
@@ -29,17 +33,23 @@ vec4 explode(vec4 position, vec3 normal) {
 }
 
 void gen_vertex(int index) {
-    gl_Position = explode(gl_in[index].gl_Position, get_normal());
-    normal = gs_in[index].normal;
-    position = gs_in[index].position;
-    texture_coords = gs_in[index].texture_coords;
+    gl_Position = gl_in[index].gl_Position;
+    gs_out.normal = gs_in[index].normal;
+    gs_out.position = gs_in[index].position;
+    gs_out.texture_coords = gs_in[index].texture_coords;
     EmitVertex();
+
+    gl_Position = gl_in[index].gl_Position + vec4(c_normal[index], 0.0) * 0.1;
+    gs_out.normal = gs_in[index].normal;
+    gs_out.position = gs_in[index].position;
+    gs_out.texture_coords = gs_in[index].texture_coords;
+    EmitVertex();
+
+    EndPrimitive();
 }
 
 void main() {
     for (int i = 0; i < 3; i++) {
         gen_vertex(i);
     }
-
-    EndPrimitive();
 }

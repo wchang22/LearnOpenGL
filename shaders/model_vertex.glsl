@@ -3,11 +3,13 @@ layout (location = 0) in vec3 in_position;
 layout (location = 1) in vec3 in_normal;
 layout (location = 2) in vec2 in_texture_coords;
 
-out VS_OUT {
+out V_DATA {
     vec3 normal;
     vec3 position;
     vec2 texture_coords;
 } vs_out;
+
+out vec3 c_normal;
 
 uniform mat4 model;
 
@@ -22,4 +24,5 @@ void main() {
     vs_out.texture_coords = in_texture_coords;
 
     gl_Position = perspective * view * model * vec4(in_position, 1.0);
+    c_normal = normalize(vec3(perspective * transpose(inverse(view * model)) * vec4(in_normal, 0.0)));
 }
