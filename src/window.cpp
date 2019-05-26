@@ -6,7 +6,7 @@ static float delta_fovy = 0.0f;
 
 Window::Window()
   : window(nullptr), display(nullptr),
-    camera(std::make_shared<Camera>(vec3(0.0f, 0.0f, 6.0f),
+    camera(std::make_shared<Camera>(vec3(0.0f, 50.0f, 250.0f),
                                     vec3(0.0f, 0.0f, -1.0f),
                                     vec3(0.0f, 1.0f, 0.0f)))
 {

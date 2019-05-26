@@ -13,9 +13,13 @@ Display::Display(std::shared_ptr<Camera> camera)
   : shaders(nullptr),
     skybox_shaders(nullptr),
     model_shaders(nullptr),
+    asteroid_shaders(nullptr),
+    planet_shaders(nullptr),
     camera(camera),
     textures(),
-    model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj")
+    model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj"),
+    model_planet("../../assets/planet/planet.obj"),
+    model_rock("../../assets/rock/rock.obj")
 {
   srand(static_cast<unsigned int>(time(nullptr)));
 
@@ -43,9 +47,12 @@ void Display::draw() const {
   glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), &perspective[0][0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-  draw_model(*model_shaders);
-  draw_cubes();
-  draw_floor();
+//  draw_model(*model_shaders);
+//  draw_cubes();
+//  draw_floor();
+
+  draw_planet();
+  draw_rock();
   draw_skybox();
 }
 
@@ -101,16 +108,42 @@ void Display::init_buffers() {
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+
+  model_matrices.reserve(amount);
+  float radius = 150.0;
+  float offset = 25.0f;
+
+  for (unsigned int i = 0; i < amount; i++) {
+    double angle = i * 360.0 / amount;
+    float displacement = rand() % static_cast<int>((2 * offset * 100)) / 100.0f - offset;
+    float x = static_cast<float>(sin(angle)) * radius + displacement;
+    displacement = rand() % static_cast<int>((2 * offset * 100)) / 100.0f - offset;
+    float y = displacement * 0.6f;
+    displacement = rand() % static_cast<int>((2 * offset * 100)) / 100.0f - offset;
+    float z = static_cast<float>(cos(angle)) * radius + displacement;
+    mat4 model = glm::translate(mat4(1.0f), vec3(x, y, z));
+
+    float scale = rand() % 20 / 100.0f + 0.05f;
+    model = glm::scale(model, vec3(scale));
+
+    float rotation = rand() % 360;
+    model = glm::rotate(model, rotation, vec3(0.4f, 0.6f, 0.8f));
+
+    model_matrices.emplace_back(std::move(model));
+  }
+
+  model_rock.add_instanced_array(model_matrices.data(), sizeof(mat4), amount, 3);
 }
 
 void Display::init_textures() {
   textures.load_cubemap({
-    "../../assets/skybox/right.jpg",
-    "../../assets/skybox/left.jpg",
-    "../../assets/skybox/top.jpg",
-    "../../assets/skybox/bottom.jpg",
-    "../../assets/skybox/front.jpg",
-    "../../assets/skybox/back.jpg"
+    "../../assets/space/right.jpg",
+    "../../assets/space/left.jpg",
+    "../../assets/space/top.jpg",
+    "../../assets/space/bottom.jpg",
+    "../../assets/space/front.jpg",
+    "../../assets/space/back.jpg"
   });
 
   for (auto it = model_nanosuit.meshes.begin(); it != model_nanosuit.meshes.end(); it++) {
@@ -122,10 +155,13 @@ void Display::init_shaders() {
   shaders = std::make_unique<Shader>("../../shaders/cube_vertex.glsl",
                                      "../../shaders/cube_fragment.glsl");
   model_shaders = std::make_unique<Shader>("../../shaders/model_vertex.glsl",
-                                           "../../shaders/model_fragment.glsl",
-                                           "../../shaders/model_geometry.glsl");
+                                           "../../shaders/model_fragment.glsl");
   skybox_shaders = std::make_unique<Shader>("../../shaders/skybox_vertex.glsl",
                                             "../../shaders/skybox_fragment.glsl");
+  asteroid_shaders = std::make_unique<Shader>("../../shaders/asteroid_vertex.glsl",
+                                              "../../shaders/asteroid_fragment.glsl");
+  planet_shaders = std::make_unique<Shader>("../../shaders/planet_vertex.glsl",
+                                              "../../shaders/asteroid_fragment.glsl");
 }
 
 void Display::draw_cubes() const
@@ -245,6 +281,22 @@ void Display::draw_skybox() const
   glDrawArrays(GL_TRIANGLES, 0, 36);
 
   glDepthFunc(GL_LESS);
+}
+
+void Display::draw_planet() const
+{
+  planet_shaders->use_shader_program();
+  mat4 model_mat = glm::translate(mat4(1.0f), vec3(0.0f, -3.0f, 0.0f));
+  model_mat = glm::scale(model_mat, vec3(4.0f, 4.0f, 4.0f));
+  glUniformMatrix4fv(planet_shaders->get_uniform_location("model"), 1, GL_FALSE, &model_mat[0][0]);
+  model_planet.draw(*planet_shaders);
+}
+
+void Display::draw_rock() const
+{
+  asteroid_shaders->use_shader_program();
+
+  model_rock.draw_instanced(*asteroid_shaders, amount);
 }
 
 void* Display::buffer_offset(int offset) {

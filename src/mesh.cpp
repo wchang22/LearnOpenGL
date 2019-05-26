@@ -33,13 +33,30 @@ Mesh::~Mesh()
   glDeleteVertexArrays(1, &VAO);
 }
 
-void Mesh::draw(const Shader& shader) const
+void Mesh::add_instanced_data(unsigned int vertex_attrib_pointer, size_t data_size,
+                              unsigned int data_multiple)
+{
+  glBindVertexArray(VAO);
+
+  int attrib_width = static_cast<int>(static_cast<float>(data_size) / sizeof (vec4) * 4);
+
+  for (unsigned int i = vertex_attrib_pointer; i < vertex_attrib_pointer + data_multiple; i++) {
+    glVertexAttribPointer(i, attrib_width, GL_FLOAT, GL_FALSE,
+                          static_cast<int>(data_size * data_multiple),
+                          reinterpret_cast<void*>((i - vertex_attrib_pointer) * data_size));
+    glEnableVertexAttribArray(i);
+    glVertexAttribDivisor(i, 1);
+  }
+
+  glBindVertexArray(0);
+}
+
+void Mesh::draw_instanced(const Shader& shader, unsigned int num_times) const
 {
   textures.use_textures(shader);
-
   glBindVertexArray(VAO);
-  glDrawElements(GL_TRIANGLES, static_cast<int>(indices.size()),
-                 GL_UNSIGNED_INT, reinterpret_cast<void*>(0));
+  glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(indices.size()),
+                          GL_UNSIGNED_INT, reinterpret_cast<void*>(0), static_cast<int>(num_times));
   glBindVertexArray(0);
   glActiveTexture(GL_TEXTURE0);
 }

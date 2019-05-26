@@ -9,6 +9,7 @@
 #include "shader.h"
 #include "textures.h"
 
+typedef glm::vec4 vec4;
 typedef glm::vec3 vec3;
 typedef glm::vec2 vec2;
 
@@ -25,7 +26,9 @@ public:
   Mesh(Mesh&& other);
   ~Mesh();
 
-  void draw(const Shader& shader) const;
+  void add_instanced_data(unsigned int vertex_attrib_pointer, size_t data_size,
+                          unsigned int data_multiple);
+  void draw_instanced(const Shader& shader, unsigned int num_times) const;
 
   std::vector<Vertex> vertices;
   std::vector<unsigned int> indices;

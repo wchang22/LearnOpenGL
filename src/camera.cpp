@@ -26,7 +26,7 @@ mat4 Camera::lookat() const {
 
 mat4 Camera::perspective() const {
   return glm::perspective(glm::radians(fovy), static_cast<float>(Window::WIDTH) / Window::HEIGHT,
-                          0.1f, 100.0f);
+                          0.1f, 500.0f);
 }
 
 void Camera::move(Direction direction) {
