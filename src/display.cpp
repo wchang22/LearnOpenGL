@@ -41,10 +41,10 @@ Display::~Display() {
 void Display::draw() const {
   mat4 view = camera->lookat();
   mat4 perspective = camera->perspective();
+  mat4 view_perspective = perspective * view;
 
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), &view[0][0]);
-  glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), &perspective[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), &view_perspective[0][0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 //  draw_model(*model_shaders);
@@ -101,13 +101,8 @@ void Display::init_buffers() {
 
   glGenBuffers(1, &UBO);
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-  glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(mat4), nullptr, GL_STATIC_DRAW);
-  glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBO, 0, 2 * sizeof (mat4));
-
-
-  glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(mat4), nullptr, GL_STATIC_DRAW);
+  glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBO, 0, sizeof (mat4));
 
 
   model_matrices.reserve(amount);
@@ -119,7 +114,7 @@ void Display::init_buffers() {
     float displacement = rand() % static_cast<int>((2 * offset * 100)) / 100.0f - offset;
     float x = static_cast<float>(sin(angle)) * radius + displacement;
     displacement = rand() % static_cast<int>((2 * offset * 100)) / 100.0f - offset;
-    float y = displacement * 0.6f;
+    float y = displacement * 0.4f;
     displacement = rand() % static_cast<int>((2 * offset * 100)) / 100.0f - offset;
     float z = static_cast<float>(cos(angle)) * radius + displacement;
     mat4 model = glm::translate(mat4(1.0f), vec3(x, y, z));
@@ -133,7 +128,16 @@ void Display::init_buffers() {
     model_matrices.emplace_back(std::move(model));
   }
 
-  model_rock.add_instanced_array(model_matrices.data(), sizeof(mat4), amount, 3);
+  glGenBuffers(1, &SSBO);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, amount * sizeof(mat4), model_matrices.data(), GL_STATIC_DRAW);
+  glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 1, SSBO, 0, amount * sizeof (mat4));
+
+
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void Display::init_textures() {
@@ -269,12 +273,14 @@ void Display::draw_skybox() const
   glDepthFunc(GL_LEQUAL);
 
   mat4 view = mat4(mat3(camera->lookat()));
+  mat4 perspective = camera->perspective();
+  mat4 view_perspective = perspective * view;
 
   skybox_shaders->use_shader_program();
   textures.use_textures(*skybox_shaders);
 
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), &view[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), &view_perspective[0][0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   glBindVertexArray(skyboxVAO);
@@ -286,8 +292,8 @@ void Display::draw_skybox() const
 void Display::draw_planet() const
 {
   planet_shaders->use_shader_program();
-  mat4 model_mat = glm::translate(mat4(1.0f), vec3(0.0f, -3.0f, 0.0f));
-  model_mat = glm::scale(model_mat, vec3(4.0f, 4.0f, 4.0f));
+  mat4 model_mat = glm::translate(mat4(1.0f), vec3(0.0f, -8.0f, 0.0f));
+  model_mat = glm::scale(model_mat, vec3(10.0f, 10.0f, 10.0f));
   glUniformMatrix4fv(planet_shaders->get_uniform_location("model"), 1, GL_FALSE, &model_mat[0][0]);
   model_planet.draw(*planet_shaders);
 }

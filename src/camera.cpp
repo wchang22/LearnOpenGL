@@ -5,7 +5,7 @@
 
 #include <GLFW/glfw3.h>
 
-const float SPEED_MULTIPLIER = 2.5f;
+const float SPEED_MULTIPLIER = 25.0f;
 
 Camera::Camera(vec3 position, vec3 forward, vec3 up)
   : position(position),
