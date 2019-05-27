@@ -36,7 +36,7 @@ private:
   void draw_planet() const;
   void draw_rock() const;
 
-  unsigned int amount = 100000;
+  unsigned int amount = 5000;
   std::unique_ptr<Shader> shaders;
   std::unique_ptr<Shader> skybox_shaders;
   std::unique_ptr<Shader> model_shaders;
