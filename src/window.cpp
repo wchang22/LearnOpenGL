@@ -56,6 +56,7 @@ Window::~Window() {
 void Window::main_loop() {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_MULTISAMPLE);
+  glEnable(GL_FRAMEBUFFER_SRGB);
 
   try {
     while (!glfwWindowShouldClose(window)) {

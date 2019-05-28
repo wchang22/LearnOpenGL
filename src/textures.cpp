@@ -43,7 +43,7 @@ void Textures::load_texture_from_image(const char* path, const std::string& type
   }
 
   const int mipmap_level = 0;
-  const int texture_type = GL_RGBA;
+  const int texture_type = GL_SRGB_ALPHA;
   const GLenum image_type = GL_UNSIGNED_BYTE;
   GLenum image_format;
 
@@ -106,11 +106,12 @@ void Textures::load_cubemap(const std::vector<std::string>& faces)
     }
 
     const int mipmap_level = 0;
-    const int texture_type = GL_RGB;
+    const int texture_type = GL_SRGB;
+    const int image_format = GL_RGB;
     const GLenum image_type = GL_UNSIGNED_BYTE;
 
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mipmap_level, texture_type,
-                 width, height, 0, texture_type, image_type, image_data);
+                 width, height, 0, image_format, image_type, image_data);
     stbi_image_free(image_data);
   }
 
