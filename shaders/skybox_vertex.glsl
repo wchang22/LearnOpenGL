@@ -4,7 +4,7 @@ layout (location = 0) in vec3 aPos;
 out vec3 TexCoords;
 
 layout (std140, binding = 0) uniform Matrices {
-    uniform mat4 view_perspective;
+    mat4 view_perspective;
 };
 
 void main()

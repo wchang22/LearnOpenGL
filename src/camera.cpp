@@ -5,7 +5,7 @@
 
 #include <GLFW/glfw3.h>
 
-const float SPEED_MULTIPLIER = 25.0f;
+const float SPEED_MULTIPLIER = 2.5f;
 
 Camera::Camera(vec3 position, vec3 forward, vec3 up)
   : position(position),
@@ -26,7 +26,7 @@ mat4 Camera::lookat() const {
 
 mat4 Camera::perspective() const {
   return glm::perspective(glm::radians(fovy), static_cast<float>(Window::WIDTH) / Window::HEIGHT,
-                          0.1f, 500.0f);
+                          0.1f, 100.0f);
 }
 
 void Camera::move(Direction direction) {

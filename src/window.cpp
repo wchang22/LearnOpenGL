@@ -6,7 +6,7 @@ static float delta_fovy = 0.0f;
 
 Window::Window()
   : window(nullptr), display(nullptr),
-    camera(std::make_shared<Camera>(vec3(0.0f, 50.0f, 250.0f),
+    camera(std::make_shared<Camera>(vec3(0.0f, 0.0f, 6.0f),
                                     vec3(0.0f, 0.0f, -1.0f),
                                     vec3(0.0f, 1.0f, 0.0f)))
 {
@@ -60,7 +60,7 @@ void Window::main_loop() {
 
   try {
     while (!glfwWindowShouldClose(window)) {
-      glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       camera->update_frames();
