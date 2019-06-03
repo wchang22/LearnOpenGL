@@ -117,4 +117,12 @@ static const vec3 POINT_LIGHT_POSITIONS[NUM_POINT_LIGHTS] = {
   glm::vec3( 0.0f,  0.0f, -3.0f)
 };
 
+static float quadVertices[] = {
+  // positions        // texture Coords
+  -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+  -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+   1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+   1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+};
+
 #endif // DATA_H

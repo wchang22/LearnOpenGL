@@ -18,8 +18,8 @@ public:
 
   void main_loop();
 
-  static const int WIDTH = 800;
-  static const int HEIGHT = 600;
+  static int width();
+  static int height();
 
 private:
   static void framebuffer_size_callback(GLFWwindow* window, int width, int height);

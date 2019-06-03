@@ -5,10 +5,6 @@ const float MOUSE_SENSITIVITY = 0.05f;
 static float delta_fovy = 0.0f;
 
 Window::Window()
-  : window(nullptr), display(nullptr),
-    camera(std::make_shared<Camera>(vec3(0.0f, 0.0f, 6.0f),
-                                    vec3(0.0f, 0.0f, -1.0f),
-                                    vec3(0.0f, 1.0f, 0.0f)))
 {
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -16,9 +12,9 @@ Window::Window()
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_SAMPLES, 4);
 
-  const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-  window = glfwCreateWindow(static_cast<int>(mode->height * 4.0 / 3.0),
-                            mode->height, "LearnOpenGL", glfwGetPrimaryMonitor(), nullptr);
+  const int width = Window::width();
+  const int height = Window::height();
+  window = glfwCreateWindow(width, height, "LearnOpenGL", glfwGetPrimaryMonitor(), nullptr);
 
   if (!window) {
     glfwDestroyWindow(window);
@@ -34,10 +30,14 @@ Window::Window()
     throw Exception::WindowException("Failed to create initialize GLAD");
   }
 
-  glViewport(0, 0, WIDTH, HEIGHT);
+  glViewport(0, 0, width, height);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetScrollCallback(window, scroll_callback);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+  camera = std::make_shared<Camera>(vec3(0.0f, 0.0f, 6.0f),
+                                    vec3(0.0f, 0.0f, -1.0f),
+                                    vec3(0.0f, 1.0f, 0.0f));
 
   try {
     display = std::make_unique<Display>(camera);
@@ -78,6 +78,16 @@ void Window::main_loop() {
     glfwDestroyWindow(window);
     std::rethrow_exception(ptr);
   }
+}
+
+int Window::width()
+{
+  return glfwGetVideoMode(glfwGetPrimaryMonitor())->width;
+}
+
+int Window::height()
+{
+  return glfwGetVideoMode(glfwGetPrimaryMonitor())->height;
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height) {

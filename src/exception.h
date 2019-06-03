@@ -36,6 +36,11 @@ public:
     ModelException(const char* msg);
     const char* what() const noexcept override;
   };
+
+  struct ShadowException : public std::runtime_error {
+    ShadowException(const char* msg);
+    const char* what() const noexcept override;
+  };
 };
 
 #endif // EXCEPTION_H

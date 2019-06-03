@@ -23,6 +23,15 @@ Textures::Textures(Textures&& other)
   other.texture_ids.clear();
 }
 
+Textures& Textures::operator=(Textures&& other)
+{
+  texture_ids = std::move(other.texture_ids);
+  texture_paths = std::move(other.texture_paths);
+  texture_types = std::move(other.texture_types);
+  other.texture_ids.clear();
+  return *this;
+}
+
 void Textures::load_texture_from_image(const char* path, const std::string& type) {
   auto it = std::find(texture_paths.begin(), texture_paths.end(), std::string(path));
 
@@ -189,4 +198,9 @@ void Textures::append(const Textures& other)
   texture_types.insert(texture_types.end(),
                        other.texture_types.begin(),
                        other.texture_types.end());
+}
+
+size_t Textures::size() const
+{
+  return texture_ids.size();
 }

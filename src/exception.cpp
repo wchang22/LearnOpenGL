@@ -35,3 +35,10 @@ Exception::ModelException::ModelException(const char* msg) : std::runtime_error(
 const char* Exception::ModelException::what() const noexcept {
   return std::runtime_error::what();
 }
+
+Exception::ShadowException::ShadowException(const char* msg) : std::runtime_error(msg) {}
+
+const char* Exception::ShadowException::what() const noexcept {
+  return std::runtime_error::what();
+}
+
