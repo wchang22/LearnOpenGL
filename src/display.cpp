@@ -8,11 +8,13 @@
 #include <GLFW/glfw3.h>
 #include <assimp/scene.h>
 
+const vec3 dir_light_dir = vec3(2.0f, -4.0f, 1.0f);
+
 Display::Display(std::shared_ptr<Camera> camera)
   : camera(camera),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj"),
     model_aircraft("../../assets/aircraft/aircraft.obj"),
-    shadow(1024, 1024, Window::width(), Window::height())
+    shadow(1024, 1024, Window::width(), Window::height(), dir_light_dir)
 {
   srand(static_cast<unsigned int>(time(nullptr)));
 
@@ -36,24 +38,18 @@ void Display::draw() const {
   mat4 view = camera->lookat();
   mat4 perspective = camera->perspective();
   mat4 world_space = perspective * view;
-
-  mat4 light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 10.0f);
-  mat4 light_view = glm::lookAt(vec3(-2.0f, 4.0f, -1.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
-  mat4 light_space = light_projection * light_view;
-
   mat4 model(1.0f);
 
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0 * sizeof(mat4), sizeof(mat4), &world_space[0][0]);
-  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof(mat4), sizeof(mat4), &light_space[0][0]);
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(mat4), sizeof(mat4), &model[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), &world_space[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), &model[0][0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   shadow.bind_depth_map();
 
-  draw_model(*depth_shaders);
-  draw_cubes(*depth_shaders);
-  draw_floor(*depth_shaders);
+  draw_model(*dir_depth_shaders);
+  draw_cubes(*dir_depth_shaders);
+  draw_floor(*dir_depth_shaders);
 
   shadow.bind_shadow_map("shadow_map", { shaders, model_shaders });
   set_lights();
@@ -120,7 +116,7 @@ void Display::init_buffers() {
 
   glGenBuffers(1, &UBO);
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-  glBufferData(GL_UNIFORM_BUFFER, 3 * sizeof(mat4), nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(mat4), nullptr, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, UBO);
 
 
@@ -155,8 +151,8 @@ void Display::init_shaders() {
                                            "../../shaders/model_fragment.glsl");
   skybox_shaders = std::make_unique<Shader>("../../shaders/skybox_vertex.glsl",
                                             "../../shaders/skybox_fragment.glsl");
-  depth_shaders = std::make_unique<Shader>("../../shaders/depth_vertex.glsl",
-                                           "../../shaders/depth_fragment.glsl");
+  dir_depth_shaders = std::make_unique<Shader>("../../shaders/dir_depth_vertex.glsl",
+                                           "../../shaders/dir_depth_fragment.glsl");
 }
 
 void Display::set_lights() const
@@ -169,7 +165,7 @@ void Display::set_lights() const
   };
 
   static DirLight dir_light {
-    vec3(2.0f, -4.0f, 1.0f),
+    dir_light_dir,
     vec3(0.05f),
     vec3(0.4f),
     vec3(0.5f),
@@ -225,11 +221,11 @@ void Display::draw_cubes(const Shader& shader) const
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
 
   model = glm::translate(model, vec3(-1.0f, 0.0f, -1.0f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof (mat4), sizeof (mat4), &model[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
   glDrawArrays(GL_TRIANGLES, 0, 36);
 
   model = glm::translate(mat4(1.0f), vec3(2.0f, 0.0f, 0.0f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof (mat4), sizeof (mat4), &model[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
   glDrawArrays(GL_TRIANGLES, 0, 36);
 
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -245,7 +241,7 @@ void Display::draw_floor(const Shader& shader) const
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
 
   mat4 model(1.0f);
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof (mat4), sizeof (mat4), &model[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -260,13 +256,13 @@ void Display::draw_model(const Shader& shader) const
   mat4 model = glm::scale(mat4(1.0f), vec3(0.2f, 0.2, 0.2f));
   model = glm::rotate(model, -static_cast<float>(glfwGetTime()), vec3(0, 1, 0));
   model = glm::translate(model, vec3(0.0f, -2.5f, 0.0f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof (mat4), sizeof (mat4), &model[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
   model_nanosuit.draw(shader);
 
   model = glm::scale(mat4(1.0f), vec3(0.6f));
   model = glm::rotate(model, static_cast<float>(glfwGetTime()), vec3(0, 1, 0));
   model = glm::translate(model, vec3(5.0f, 2.0f, 0.0f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof (mat4), sizeof (mat4), &model[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
   model_aircraft.draw(shader);
 
   glBindBuffer(GL_UNIFORM_BUFFER, 0);

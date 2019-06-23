@@ -9,7 +9,7 @@
 #include "shader.h"
 #include "textures.h"
 #include "model.h"
-#include "shadow.h"
+#include "directional_shadow.h"
 
 typedef glm::vec3 vec3;
 typedef glm::mat3 mat3;
@@ -40,13 +40,13 @@ private:
   std::shared_ptr<Shader> shaders;
   std::shared_ptr<Shader> skybox_shaders;
   std::shared_ptr<Shader> model_shaders;
-  std::shared_ptr<Shader> depth_shaders;
+  std::shared_ptr<Shader> dir_depth_shaders;
   std::shared_ptr<Camera> camera;
   Textures textures;
   Textures skybox_textures;
   Model model_nanosuit;
   Model model_aircraft;
-  Shadow shadow;
+  DirectionalShadow shadow;
 };
 
 #endif // DISPLAY_H

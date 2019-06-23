@@ -12,8 +12,11 @@ out V_DATA {
 
 layout (std140, binding = 0) uniform Matrices {
     mat4 world_space;
-    mat4 light_space;
     mat4 model;
+};
+
+layout (std140, binding = 8) uniform DirectionalShadow {
+    mat4 light_space;
 };
 
 void main() {
