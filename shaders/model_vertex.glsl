@@ -23,7 +23,6 @@ void main() {
     vs_out.position = vec3(model * vec4(in_position, 1.0));
     vs_out.normal = mat3(transpose(inverse(model))) * in_normal;
     vs_out.texture_coords = in_texture_coords;
-    vs_out.position_light_space = light_space * vec4(vs_out.position, 1.0);
 
     gl_Position = world_space * model * vec4(in_position, 1.0);
 }

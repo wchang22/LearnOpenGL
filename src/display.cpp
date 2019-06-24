@@ -9,12 +9,13 @@
 #include <assimp/scene.h>
 
 const vec3 dir_light_dir = vec3(2.0f, -4.0f, 1.0f);
+const vec3 point_light_pos = vec3(0.0f, 3.0f, 3.0f);
 
 Display::Display(std::shared_ptr<Camera> camera)
   : camera(camera),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj"),
     model_aircraft("../../assets/aircraft/aircraft.obj"),
-    shadow(1024, 1024, Window::width(), Window::height(), dir_light_dir)
+    point_shadow(1024, 1024, Window::width(), Window::height(), point_light_pos)
 {
   srand(static_cast<unsigned int>(time(nullptr)));
 
@@ -45,18 +46,19 @@ void Display::draw() const {
   glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), &model[0][0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-  shadow.bind_depth_map();
+  point_shadow.bind_depth_map();
 
-  draw_model(*dir_depth_shaders);
-  draw_cubes(*dir_depth_shaders);
-  draw_floor(*dir_depth_shaders);
+  draw_model(*point_depth_shaders);
+  draw_cubes(*point_depth_shaders);
+  draw_box(*point_depth_shaders);
 
-  shadow.bind_shadow_map("shadow_map", { shaders, model_shaders });
+  point_shadow.bind_shadow_map("shadow_map", { shaders, model_shaders });
   set_lights();
 
   draw_cubes(*shaders);
-  draw_floor(*shaders);
+  draw_box(*shaders);
   draw_model(*model_shaders);
+  draw_lights(*light_shaders);
   draw_skybox();
 }
 
@@ -109,8 +111,7 @@ void Display::init_buffers() {
 
   glGenBuffers(1, &lightsUBO);
   glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
-  glBufferData(GL_UNIFORM_BUFFER, (5 + NUM_POINT_LIGHTS * 5) * sizeof(vec4),
-               nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, 10 * sizeof(vec4), nullptr, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_UNIFORM_BUFFER, 1, lightsUBO);
 
 
@@ -147,12 +148,15 @@ void Display::init_textures() {
 void Display::init_shaders() {
   shaders = std::make_unique<Shader>("../../shaders/cube_vertex.glsl",
                                      "../../shaders/cube_fragment.glsl");
+  light_shaders = std::make_unique<Shader>("../../shaders/light_vertex.glsl",
+                                           "../../shaders/light_fragment.glsl");
   model_shaders = std::make_unique<Shader>("../../shaders/model_vertex.glsl",
                                            "../../shaders/model_fragment.glsl");
   skybox_shaders = std::make_unique<Shader>("../../shaders/skybox_vertex.glsl",
                                             "../../shaders/skybox_fragment.glsl");
-  dir_depth_shaders = std::make_unique<Shader>("../../shaders/dir_depth_vertex.glsl",
-                                           "../../shaders/dir_depth_fragment.glsl");
+  point_depth_shaders = std::make_unique<Shader>("../../shaders/point_depth_vertex.glsl",
+                                                 "../../shaders/point_depth_fragment.glsl",
+                                                 "../../shaders/point_depth_geometry.glsl");
 }
 
 void Display::set_lights() const
@@ -194,18 +198,14 @@ void Display::set_lights() const
   glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof (vec4), sizeof (vec3), &dir_light.diffuse[0]);
   glBufferSubData(GL_UNIFORM_BUFFER, 3 * sizeof (vec4), sizeof (vec3), &dir_light.specular[0]);
 
-  for (unsigned int i = 0; i < NUM_POINT_LIGHTS; i++) {
-    glBufferSubData(GL_UNIFORM_BUFFER, (4 + i * 5) * sizeof (vec4), sizeof (vec3), &POINT_LIGHT_POSITIONS[i][0]);
-    glBufferSubData(GL_UNIFORM_BUFFER, (5 + i * 5) * sizeof (vec4), sizeof (vec3), &point_light.ambient[0]);
-    glBufferSubData(GL_UNIFORM_BUFFER, (6 + i * 5) * sizeof (vec4), sizeof (vec3), &point_light.diffuse[0]);
-    glBufferSubData(GL_UNIFORM_BUFFER, (7 + i * 5) * sizeof (vec4), sizeof (vec3), &point_light.specular[0]);
-    glBufferSubData(GL_UNIFORM_BUFFER, (8 + i * 5) * sizeof (vec4), sizeof (vec3), &point_light.attenuation[0]);
-  }
+  glBufferSubData(GL_UNIFORM_BUFFER, 4 * sizeof (vec4), sizeof (vec3), &point_light_pos[0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 5 * sizeof (vec4), sizeof (vec3), &point_light.ambient[0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 6 * sizeof (vec4), sizeof (vec3), &point_light.diffuse[0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 7 * sizeof (vec4), sizeof (vec3), &point_light.specular[0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 8 * sizeof (vec4), sizeof (vec3), &point_light.attenuation[0]);
 
-  glBufferSubData(GL_UNIFORM_BUFFER, (4 + NUM_POINT_LIGHTS * 5) * sizeof (vec4),
-                  sizeof (vec3), &camera->get_position()[0]);
-  glBufferSubData(GL_UNIFORM_BUFFER, (4 + NUM_POINT_LIGHTS * 5) * sizeof (vec4) + sizeof (vec3),
-                  sizeof (float), &shininess);
+  glBufferSubData(GL_UNIFORM_BUFFER, 9 * sizeof (vec4), sizeof (vec3), &camera->get_position()[0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 9 * sizeof (vec4) + sizeof (vec3), sizeof (float), &shininess);
 
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
@@ -220,7 +220,15 @@ void Display::draw_cubes(const Shader& shader) const
 
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
 
-  model = glm::translate(model, vec3(-1.0f, 0.0f, -1.0f));
+  model = glm::translate(model, vec3(0.0f, -2.0f, 0.0f));
+  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
+  glDrawArrays(GL_TRIANGLES, 0, 36);
+
+  model = glm::translate(mat4(1.0f), vec3(2.0f, 4.0f, 2.0f));
+  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
+  glDrawArrays(GL_TRIANGLES, 0, 36);
+
+  model = glm::translate(mat4(1.0f), vec3(-1.0f, 0.0f, -1.0f));
   glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
   glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -231,20 +239,40 @@ void Display::draw_cubes(const Shader& shader) const
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void Display::draw_floor(const Shader& shader) const
+void Display::draw_lights(const Shader& shader) const
 {
   shader.use_shader_program();
 
-  glBindVertexArray(planeVAO);
-  textures.use_textures(shader);
+  glBindVertexArray(cubeVAO);
+  mat4 model(1.0f);
 
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
 
-  mat4 model(1.0f);
+  model = glm::translate(model, point_light_pos);
+  model = glm::scale(model, vec3(0.2f));
   glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glDrawArrays(GL_TRIANGLES, 0, 36);
 
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void Display::draw_box(const Shader& shader) const
+{
+  shader.use_shader_program();
+  glUniform1i(shader.get_uniform_location("reverse_normal"), 1);
+
+  glBindVertexArray(cubeVAO);
+  textures.use_textures(shader);
+  mat4 model(1.0f);
+
+  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+
+  model = glm::scale(model, vec3(10.0f));
+  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
+  glDrawArrays(GL_TRIANGLES, 0, 36);
+
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  glUniform1i(shader.get_uniform_location("reverse_normal"), 0);
 }
 
 void Display::draw_model(const Shader& shader) const

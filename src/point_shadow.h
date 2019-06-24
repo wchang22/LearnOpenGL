@@ -7,7 +7,10 @@ class PointShadow : public Shadow
 {
 public:
   PointShadow(int width, int height, int window_width, int window_height, vec3 position);
-  ~PointShadow();
+  ~PointShadow() override;
+
+  void bind_shadow_map(const char* uniform_name,
+                       const std::vector<std::shared_ptr<Shader>>& shaders) const override;
 
 private:
   unsigned int UBO;

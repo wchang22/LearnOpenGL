@@ -33,8 +33,8 @@ void Shadow::bind_shadow_map(const char* uniform_name,
 
   for (auto shader : shaders) {
     shader->use_shader_program();
-    glActiveTexture(GL_TEXTURE31);
-    glUniform1i(shader->get_uniform_location(uniform_name), 31);
+    glActiveTexture(GL_TEXTURE30);
+    glUniform1i(shader->get_uniform_location(uniform_name), 30);
     glBindTexture(GL_TEXTURE_2D, depth_map);
   }
 }

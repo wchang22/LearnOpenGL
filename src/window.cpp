@@ -35,7 +35,7 @@ Window::Window()
   glfwSetScrollCallback(window, scroll_callback);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-  camera = std::make_shared<Camera>(vec3(0.0f, 0.0f, 6.0f),
+  camera = std::make_shared<Camera>(vec3(0.0f, 2.0f, 4.0f),
                                     vec3(0.0f, 0.0f, -1.0f),
                                     vec3(0.0f, 1.0f, 0.0f));
 

@@ -1,12 +1,10 @@
 #version 450 core
 
-#define NUM_POINT_LIGHTS 4
-
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 uniform sampler2D texture_reflection1;
 uniform samplerCube texture_cubemap1;
-uniform sampler2D shadow_map;
+uniform samplerCube shadow_map;
 
 struct DirLight {
     vec3 direction;
@@ -34,9 +32,15 @@ out vec4 frag_color;
 
 layout (std140, binding = 1) uniform Lights {
     DirLight dir_light;
-    PointLight point_light[NUM_POINT_LIGHTS];
+    PointLight point_light;
     vec3 view_position;
     float material_shininess;
+};
+
+layout (std140, binding = 9) uniform PointShadow {
+    mat4 shadow_matrices[6];
+    vec3 light_position;
+    float far_plane;
 };
 
 vec3 calc_dir_light(DirLight light, vec3 normal, vec3 eye_direction,
@@ -76,26 +80,30 @@ vec3 calc_reflection(vec3 reflection_texture, vec3 eye_direction, vec3 normal) {
     return reflection_texture * texture(texture_cubemap1, R).rgb;
 }
 
-float calc_shadow(DirLight light, vec3 normal, vec4 position_light_space) {
-    vec3 coords = position_light_space.xyz / position_light_space.w * 0.5 + 0.5;
+float calc_shadow(PointLight light, vec3 position, vec3 normal) {
+    vec3 light_ray = position - light.position;
+    float current_depth = length(light_ray);
 
-    if (coords.z > 1) {
-        return 0;
+    float bias = 0.1;
+    const int samples = 20;
+    float disk_radius = (1.0 + distance(view_position, position) / far_plane) / 25.0;
+    float shadow = 0;
+
+    const vec3 sampleOffsetDirections[samples] = vec3[]
+    (
+       vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1),
+       vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+       vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+       vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+       vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+    );
+
+    for (int i = 0; i < samples; i++) {
+        float closest_depth = texture(shadow_map, light_ray + sampleOffsetDirections[i] * disk_radius).r * far_plane;
+        shadow += current_depth - bias > closest_depth ? 1 : 0;
     }
 
-    float bias = max(0.05 * (1.0 - abs(dot(light.direction, normal))), 0.01);
-
-    float shadow = 0.0;
-    vec2 texel_size = 1.0 / textureSize(shadow_map, 0);
-
-    for (int x = -1; x <= 1; x++) {
-        for (int y = -1; y <= 1; y++) {
-            float pcf_depth = texture(shadow_map, coords.xy + vec2(x, y) * texel_size).r;
-            shadow += coords.z - bias > pcf_depth ? 1 : 0;
-        }
-    }
-
-    return shadow / 9;
+    return shadow / float(samples);
 }
 
 void main() {
@@ -105,18 +113,10 @@ void main() {
     vec3 diffuse_texture = texture(texture_diffuse1, fs_in.texture_coords).rgb;
     vec3 specular_texture = texture(texture_specular1, fs_in.texture_coords).rgb;
     vec3 reflection_texture = texture(texture_specular1, fs_in.texture_coords).rgb;
-    float shadow = calc_shadow(dir_light, normal, fs_in.position_light_space);
+    float shadow = calc_shadow(point_light, fs_in.position, normal);
 
-    vec3 color = calc_dir_light(dir_light, normal, eye_direction,
-                                diffuse_texture, specular_texture, material_shininess, shadow);
-
-//    for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
-//        color += calc_point_light(point_light[i], normal, fs_in.position, eye_direction,
-//                                  diffuse_texture, specular_texture, material_shininess, shadow);
-//    }
-
-    color += calc_reflection(reflection_texture, eye_direction, normal);
-
+    vec3 color = calc_point_light(point_light, normal, fs_in.position, eye_direction,
+                                  diffuse_texture, specular_texture, material_shininess, shadow);
 
     frag_color = vec4(color, 1.0);
 }
