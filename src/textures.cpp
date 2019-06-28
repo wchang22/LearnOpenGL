@@ -137,6 +137,7 @@ void Textures::use_textures(const Shader& shader) const {
   unsigned int num_diffuse = 1;
   unsigned int num_specular = 1;
   unsigned int num_reflection = 1;
+  unsigned int num_normal = 1;
   unsigned int num_cubemap = 1;
 
   for (unsigned int i = 0; i < texture_ids.size(); i++) {
@@ -150,6 +151,8 @@ void Textures::use_textures(const Shader& shader) const {
       number = std::to_string(num_specular++);
     } else if (name == "texture_reflection") {
       number = std::to_string(num_reflection++);
+    } else if (name == "texture_normal") {
+      number = std::to_string(num_normal++);
     } else if (name == "texture_cubemap") {
       number = std::to_string(num_cubemap++);
     } else {

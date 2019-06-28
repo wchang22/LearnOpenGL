@@ -14,6 +14,8 @@
 
 typedef glm::vec3 vec3;
 typedef glm::mat3 mat3;
+typedef glm::mat2 mat2;
+typedef glm::mat3x2 mat3x2;
 
 class Display {
 public:
@@ -28,6 +30,7 @@ private:
   unsigned int UBO, lightsUBO;
 
   static void* buffer_offset(int offset);
+  void generate_cube_vertices(float in[192], float out[504]);
   void init_buffers();
   void init_textures();
   void init_shaders();
