@@ -86,6 +86,9 @@ void Mesh::setup_mesh()
   glEnableVertexAttribArray(2);
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                         reinterpret_cast<void*>(offsetof(Vertex, texture_coords)));
+  glEnableVertexAttribArray(3);
+  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        reinterpret_cast<void*>(offsetof(Vertex, tangent)));
 
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);

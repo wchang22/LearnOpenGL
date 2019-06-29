@@ -15,7 +15,7 @@ const vec3 point_light_pos = vec3(0.0f, 3.0f, 2.0f);
 Display::Display(std::shared_ptr<Camera> camera)
   : camera(camera),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj"),
-    model_aircraft("../../assets/aircraft/aircraft.obj"),
+    model_cyborg("../../assets/cyborg/cyborg.obj"),
     point_shadow(1024, 1024, Window::width(), Window::height(), point_light_pos)
 {
   srand(static_cast<unsigned int>(time(nullptr)));
@@ -224,13 +224,6 @@ void Display::init_textures() {
     "../../assets/space/front.jpg",
     "../../assets/space/back.jpg",
   });
-
-  for (auto it = model_nanosuit.meshes.begin(); it != model_nanosuit.meshes.end(); it++) {
-    it->textures.append(skybox_textures);
-  }
-  for (auto it = model_aircraft.meshes.begin(); it != model_aircraft.meshes.end(); it++) {
-    it->textures.append(skybox_textures);
-  }
 }
 
 void Display::init_shaders() {
@@ -369,17 +362,17 @@ void Display::draw_model(const Shader& shader) const
 
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
 
+  glUniform1i(shader.get_uniform_location("gamma"), 1);
   mat4 model = glm::scale(mat4(1.0f), vec3(0.2f, 0.2, 0.2f));
   model = glm::rotate(model, -static_cast<float>(glfwGetTime()), vec3(0, 1, 0));
   model = glm::translate(model, vec3(0.0f, -2.5f, 0.0f));
   glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
   model_nanosuit.draw(shader);
+  glUniform1i(shader.get_uniform_location("gamma"), 0);
 
-  model = glm::scale(mat4(1.0f), vec3(0.6f));
-  model = glm::rotate(model, static_cast<float>(glfwGetTime()), vec3(0, 1, 0));
-  model = glm::translate(model, vec3(5.0f, 2.0f, 0.0f));
+  model = glm::translate(mat4(1.0f), vec3(1.0f, -2.5f, 0.0f));
   glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
-  model_aircraft.draw(shader);
+  model_cyborg.draw(shader);
 
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }

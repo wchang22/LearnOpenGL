@@ -52,7 +52,7 @@ void Textures::load_texture_from_image(const char* path, const std::string& type
   }
 
   const int mipmap_level = 0;
-  const int texture_type = GL_SRGB_ALPHA;
+  const int texture_type = type == "texture_normal" ? GL_RGBA : GL_SRGB_ALPHA;
   const GLenum image_type = GL_UNSIGNED_BYTE;
   GLenum image_format;
 

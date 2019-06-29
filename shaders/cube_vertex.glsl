@@ -40,10 +40,6 @@ layout (std140, binding = 1) uniform Lights {
     float material_shininess;
 };
 
-layout (std140, binding = 8) uniform DirectionalShadow {
-    mat4 light_space;
-};
-
 uniform bool reverse_normal;
 
 void main() {

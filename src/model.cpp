@@ -28,7 +28,10 @@ void Model::draw_instanced(const Shader& shader, unsigned int num_times) const
 void Model::load_model(const std::string& path)
 {
   Assimp::Importer importer;
-  const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+  const aiScene* scene = importer.ReadFile(path,
+                                           aiProcess_Triangulate |
+                                           aiProcess_FlipUVs |
+                                           aiProcess_CalcTangentSpace);
 
   if (!scene || !scene->mRootNode || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
     throw Exception::ModelException((std::string("Assimp Error: ") +
@@ -65,6 +68,7 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
 
     vertex.position = vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
     vertex.normal = vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+    vertex.tangent = vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
 
     if (mesh->mTextureCoords[0]) {
       vertex.texture_coords = vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
@@ -90,10 +94,13 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
                                                   "texture_specular");
   Textures reflection_maps = load_material_textures(material, aiTextureType_AMBIENT,
                                                   "texture_reflection");
+  Textures normal_maps = load_material_textures(material, aiTextureType_HEIGHT,
+                                                "texture_normal");
 
   textures.append(std::move(diffuse_maps));
   textures.append(std::move(specular_maps));
   textures.append(std::move(reflection_maps));
+  textures.append(std::move(normal_maps));
 
   return Mesh(std::move(vertices), std::move(indices), std::move(textures));
 }

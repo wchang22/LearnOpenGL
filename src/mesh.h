@@ -20,6 +20,7 @@ public:
     vec3 position;
     vec3 normal;
     vec2 texture_coords;
+    vec3 tangent;
   };
 
   Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned int>&& indices, Textures&& textures);

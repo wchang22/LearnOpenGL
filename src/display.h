@@ -51,7 +51,7 @@ private:
   Textures textures;
   Textures skybox_textures;
   Model model_nanosuit;
-  Model model_aircraft;
+  Model model_cyborg;
   PointShadow point_shadow;
 };
 
