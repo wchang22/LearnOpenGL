@@ -49,9 +49,9 @@ private:
   std::shared_ptr<Shader> light_shaders;
   std::shared_ptr<Camera> camera;
   Textures textures;
+  Textures toybox_textures;
   Textures skybox_textures;
   Model model_nanosuit;
-  Model model_cyborg;
   PointShadow point_shadow;
 };
 

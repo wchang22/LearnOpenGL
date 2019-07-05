@@ -15,7 +15,6 @@ const vec3 point_light_pos = vec3(0.0f, 3.0f, 2.0f);
 Display::Display(std::shared_ptr<Camera> camera)
   : camera(camera),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj"),
-    model_cyborg("../../assets/cyborg/cyborg.obj"),
     point_shadow(1024, 1024, Window::width(), Window::height(), point_light_pos)
 {
   srand(static_cast<unsigned int>(time(nullptr)));
@@ -214,8 +213,12 @@ void Display::init_buffers() {
 }
 
 void Display::init_textures() {
-  textures.load_texture_from_image("../../assets/brickwall.jpg", "texture_diffuse");
-  textures.load_texture_from_image("../../assets/brickwall_normal.jpg", "texture_normal");
+  textures.load_texture_from_image("../../assets/bricks2.jpg", "texture_diffuse");
+  textures.load_texture_from_image("../../assets/bricks2_normal.jpg", "texture_normal");
+  textures.load_texture_from_image("../../assets/bricks2_disp.jpg", "texture_height");
+  toybox_textures.load_texture_from_image("../../assets/wood.png", "texture_diffuse");
+  toybox_textures.load_texture_from_image("../../assets/toy_box_normal.png", "texture_normal");
+  toybox_textures.load_texture_from_image("../../assets/toy_box_disp.png", "texture_height");
   skybox_textures.load_cubemap({
     "../../assets/space/right.jpg",
     "../../assets/space/left.jpg",
@@ -296,7 +299,7 @@ void Display::draw_cubes(const Shader& shader) const
   shader.use_shader_program();
 
   glBindVertexArray(cubeVAO);
-  textures.use_textures(shader);
+  toybox_textures.use_textures(shader);
   mat4 model(1.0f);
 
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
@@ -369,10 +372,6 @@ void Display::draw_model(const Shader& shader) const
   glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
   model_nanosuit.draw(shader);
   glUniform1i(shader.get_uniform_location("gamma"), 0);
-
-  model = glm::translate(mat4(1.0f), vec3(1.0f, -2.5f, 0.0f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
-  model_cyborg.draw(shader);
 
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }

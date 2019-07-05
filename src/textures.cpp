@@ -52,7 +52,8 @@ void Textures::load_texture_from_image(const char* path, const std::string& type
   }
 
   const int mipmap_level = 0;
-  const int texture_type = type == "texture_normal" ? GL_RGBA : GL_SRGB_ALPHA;
+  const int texture_type = (type == "texture_normal" || type == "texture_height")
+                            ? GL_RGBA : GL_SRGB_ALPHA;
   const GLenum image_type = GL_UNSIGNED_BYTE;
   GLenum image_format;
 
@@ -138,6 +139,7 @@ void Textures::use_textures(const Shader& shader) const {
   unsigned int num_specular = 1;
   unsigned int num_reflection = 1;
   unsigned int num_normal = 1;
+  unsigned int num_height = 1;
   unsigned int num_cubemap = 1;
 
   for (unsigned int i = 0; i < texture_ids.size(); i++) {
@@ -153,6 +155,8 @@ void Textures::use_textures(const Shader& shader) const {
       number = std::to_string(num_reflection++);
     } else if (name == "texture_normal") {
       number = std::to_string(num_normal++);
+    } else if (name == "texture_height") {
+      number = std::to_string(num_height++);
     } else if (name == "texture_cubemap") {
       number = std::to_string(num_cubemap++);
     } else {
