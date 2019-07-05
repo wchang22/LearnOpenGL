@@ -8,9 +8,9 @@
 const float SPEED_MULTIPLIER = 2.5f;
 
 Camera::Camera(vec3 position, vec3 forward, vec3 up)
-  : position(position),
+  : up(up),
+    position(position),
     forward(forward),
-    up(up),
     speed(0.0f),
     time_delta(0.0f),
     last_frame(0.0f),
@@ -31,22 +31,22 @@ mat4 Camera::perspective() const {
 
 void Camera::move(Direction direction) {
   switch (direction) {
-    case FORWARD:
+    case Direction::FORWARD:
       position += forward * speed;
       break;
-    case BACKWARD:
+    case Direction::BACKWARD:
       position += -forward * speed;
       break;
-    case LEFT:
+    case Direction::LEFT:
       position += glm::normalize(glm::cross(up, forward)) * speed;
       break;
-    case RIGHT:
+    case Direction::RIGHT:
       position += glm::normalize(glm::cross(forward, up)) * speed;
       break;
-    case UP:
+    case Direction::UP:
       position += up * speed;
       break;
-    case DOWN:
+    case Direction::DOWN:
       position += -up * speed;
       break;
   }

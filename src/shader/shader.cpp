@@ -1,12 +1,13 @@
 #include "shader.h"
 #include "util/exception.h"
 
-#include <fstream>
 #include <iostream>
+#include <fstream>
 
 #include <glad/glad.h>
 
-Shader::Shader(const char* path_vertex, const char* path_fragment, const char* path_geometry) {
+Shader::Shader(const char* path_vertex, const char* path_fragment,
+               std::optional<const char*> path_geometry) {
   std::string vertex_source = read_source(path_vertex);
   std::string fragment_source = read_source(path_fragment);
   const char* vertex_source_cstr = vertex_source.c_str();
@@ -32,8 +33,8 @@ Shader::Shader(const char* path_vertex, const char* path_fragment, const char* p
 
   shader_program = glCreateProgram();
 
-  if (path_geometry) {
-    std::string geometry_source = read_source(path_geometry);
+  if (path_geometry.has_value()) {
+    std::string geometry_source = read_source(path_geometry.value());
     const char* geometry_source_cstr = geometry_source.c_str();
 
     geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
@@ -41,7 +42,7 @@ Shader::Shader(const char* path_vertex, const char* path_fragment, const char* p
     glCompileShader(geometry_shader);
 
     if (!check_shader_errors(geometry_shader)) {
-      throw Exception::ShaderException(("Failed to compile " + std::string(path_geometry) +
+      throw Exception::ShaderException(("Failed to compile " + std::string(path_geometry.value()) +
                                         ", check above log").c_str());
     }
 
@@ -77,17 +78,15 @@ std::string Shader::read_source(const char* path) {
   std::string source;
 
   if (!file.is_open()) {
-    throw Exception::ShaderException((std::string("Cannot open file ") +
+    throw Exception::ShaderException(("Cannot open file " +
                                       std::string(path)).c_str());
   }
 
   std::string line;
-
   while (std::getline(file, line)) {
-    source.append(line + "\n");
+    source.append(std::move(line));
+    source.append("\n");
   }
-
-  file.close();
 
   return source;
 }
@@ -107,7 +106,7 @@ bool Shader::check_shader_errors(unsigned int shader) {
   return false;
 }
 
-bool Shader::check_program_errors(unsigned int program){
+bool Shader::check_program_errors(unsigned int program) {
   int success;
   glGetProgramiv(program, GL_LINK_STATUS, &success);
 

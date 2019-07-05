@@ -24,7 +24,7 @@ public:
   };
 
   Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned int>&& indices, Textures&& textures);
-  Mesh(Mesh&& other);
+  Mesh(Mesh&& other) noexcept;
   ~Mesh();
 
   void add_instanced_data(unsigned int vertex_attrib_pointer, size_t data_size,
@@ -40,5 +40,7 @@ private:
 
   unsigned int VAO, VBO, EBO;
 };
+
+static_assert (std::is_nothrow_move_constructible<Mesh>::value, "Mesh not move constructible");
 
 #endif // MESH_H

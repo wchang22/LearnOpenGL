@@ -41,7 +41,7 @@ Window::Window()
 
   try {
     display = std::make_unique<Display>(camera);
-  } catch (std::runtime_error e) {
+  } catch (...) {
     std::exception_ptr ptr = std::current_exception();
     glfwDestroyWindow(window);
     std::rethrow_exception(ptr);
@@ -73,7 +73,7 @@ void Window::main_loop() {
       key_callback();
       mouse_callback();
     }
-  } catch (std::runtime_error e) {
+  } catch (...) {
     std::exception_ptr ptr = std::current_exception();
     glfwDestroyWindow(window);
     std::rethrow_exception(ptr);
@@ -110,22 +110,22 @@ void Window::key_callback() {
     cycle_fill_mode();
   }
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-    camera->move(Camera::FORWARD);
+    camera->move(Camera::Direction::FORWARD);
   }
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-    camera->move(Camera::BACKWARD);
+    camera->move(Camera::Direction::BACKWARD);
   }
   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-    camera->move(Camera::LEFT);
+    camera->move(Camera::Direction::LEFT);
   }
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-    camera->move(Camera::RIGHT);
+    camera->move(Camera::Direction::RIGHT);
   }
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-    camera->move(Camera::UP);
+    camera->move(Camera::Direction::UP);
   }
   if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-    camera->move(Camera::DOWN);
+    camera->move(Camera::Direction::DOWN);
   }
 }
 

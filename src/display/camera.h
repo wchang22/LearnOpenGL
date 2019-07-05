@@ -12,7 +12,7 @@ class Camera
 public:
   Camera(vec3 position, vec3 forward, vec3 up);
 
-  enum Direction {
+  enum class Direction {
     FORWARD,
     BACKWARD,
     LEFT,
@@ -30,11 +30,10 @@ public:
   vec3 get_position() const;
   vec3 get_direction() const;
 
-  vec3 position;
-  vec3 forward;
-
 private:
   vec3 up;
+  vec3 position;
+  vec3 forward;
 
   float speed;
   float time_delta;

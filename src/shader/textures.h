@@ -13,11 +13,11 @@ class Textures
 public:
   Textures();
   ~Textures();
-  Textures(Textures&& other);
+  Textures(Textures&& other) noexcept;
 
-  Textures& operator=(Textures&& other);
+  Textures& operator=(Textures&& other) noexcept;
 
-  void load_texture_from_image(const char* path, const std::string& type);
+  void load_texture_from_image(const char* path, std::string_view type);
   void load_cubemap(const std::vector<std::string>& faces);
   void use_textures(const Shader& shader) const;
   void append(Textures&& other);
@@ -29,5 +29,8 @@ private:
   std::vector<std::string> texture_paths;
   std::vector<std::string> texture_types;
 };
+
+static_assert (std::is_nothrow_move_constructible<Textures>::value, "Mesh not move constructible");
+static_assert (std::is_nothrow_move_assignable<Textures>::value, "Mesh not move constructible");
 
 #endif // TEXTURES_H

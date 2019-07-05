@@ -8,14 +8,13 @@
 Textures::Textures()
   : texture_ids(), texture_paths(), texture_types()
 {
-  //stbi_set_flip_vertically_on_load(true);
 }
 
 Textures::~Textures() {
   glDeleteTextures(static_cast<int>(texture_ids.size()), texture_ids.data());
 }
 
-Textures::Textures(Textures&& other)
+Textures::Textures(Textures&& other) noexcept
   : texture_ids(std::move(other.texture_ids)),
     texture_paths(std::move(other.texture_paths)),
     texture_types(std::move(other.texture_types))
@@ -23,7 +22,7 @@ Textures::Textures(Textures&& other)
   other.texture_ids.clear();
 }
 
-Textures& Textures::operator=(Textures&& other)
+Textures& Textures::operator=(Textures&& other) noexcept
 {
   texture_ids = std::move(other.texture_ids);
   texture_paths = std::move(other.texture_paths);
@@ -32,8 +31,8 @@ Textures& Textures::operator=(Textures&& other)
   return *this;
 }
 
-void Textures::load_texture_from_image(const char* path, const std::string& type) {
-  auto it = std::find(texture_paths.begin(), texture_paths.end(), std::string(path));
+void Textures::load_texture_from_image(const char* path, std::string_view type) {
+  auto it = std::find(texture_paths.begin(), texture_paths.end(), path);
 
   if (it != texture_paths.end()) {
     unsigned int i = static_cast<unsigned int>(std::distance(texture_paths.begin(), it));
@@ -47,7 +46,7 @@ void Textures::load_texture_from_image(const char* path, const std::string& type
   unsigned char* image_data = stbi_load(path, &width, &height, &num_channels, 0);
 
   if (!image_data) {
-    throw Exception::TextureException((std::string("Failed to load texture from ") +
+    throw Exception::TextureException(("Failed to load texture from " +
                                       std::string(path)).c_str());
   }
 
@@ -69,7 +68,7 @@ void Textures::load_texture_from_image(const char* path, const std::string& type
       break;
     default:
       stbi_image_free(image_data);
-      throw Exception::TextureException((std::string("Invalid image type from ") +
+      throw Exception::TextureException(("Invalid image type from " +
                                          std::string(path)).c_str());
   }
 
@@ -111,7 +110,7 @@ void Textures::load_cubemap(const std::vector<std::string>& faces)
     unsigned char* image_data = stbi_load(path, &width, &height, &num_channels, 0);
 
     if (!image_data) {
-      throw Exception::TextureException((std::string("Failed to load cubemap texture from ") +
+      throw Exception::TextureException(("Failed to load cubemap texture from " +
                                          std::string(path)).c_str());
     }
 

@@ -2,10 +2,12 @@
 #define SHADER_H
 
 #include <string>
+#include <optional>
 
 class Shader {
 public:
-  Shader(const char* path_vertex, const char* path_fragment, const char* path_geometry = nullptr);
+  Shader(const char* path_vertex, const char* path_fragment,
+         std::optional<const char*> path_geometry = std::nullopt);
   ~Shader();
 
   void use_shader_program() const;

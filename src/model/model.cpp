@@ -25,10 +25,10 @@ void Model::draw_instanced(const Shader& shader, unsigned int num_times) const
   glDisable(GL_CULL_FACE);
 }
 
-void Model::load_model(const std::string& path)
+void Model::load_model(std::string_view path)
 {
   Assimp::Importer importer;
-  const aiScene* scene = importer.ReadFile(path,
+  const aiScene* scene = importer.ReadFile(std::string(path.data()).c_str(),
                                            aiProcess_Triangulate |
                                            aiProcess_FlipUVs |
                                            aiProcess_CalcTangentSpace);
@@ -38,9 +38,7 @@ void Model::load_model(const std::string& path)
                                      importer.GetErrorString()).c_str());
   }
 
-  directory.insert(directory.begin(), std::make_move_iterator(path.begin()),
-                   std::make_move_iterator(path.begin() +
-                                           static_cast<long>(path.find_last_of('/')) + 1));
+  directory = path.substr(0, static_cast<size_t>(path.find_last_of('/')) + 1);
 
   process_node(scene->mRootNode, scene);
 }
@@ -106,7 +104,7 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
 }
 
 Textures Model::load_material_textures(aiMaterial* material, aiTextureType type,
-                                       const std::string& type_name)
+                                       std::string_view type_name)
 {
   Textures textures;
 

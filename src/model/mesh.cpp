@@ -13,7 +13,7 @@ Mesh::Mesh(std::vector<Vertex>&& vertices,
   setup_mesh();
 }
 
-Mesh::Mesh(Mesh&& other)
+Mesh::Mesh(Mesh&& other) noexcept
   : vertices(std::move(other.vertices)),
     indices(std::move(other.indices)),
     textures(std::move(other.textures)),
