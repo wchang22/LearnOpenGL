@@ -1,7 +1,7 @@
 #include "display.h"
-#include "exception.h"
-#include "data.h"
-#include "window.h"
+#include "util/exception.h"
+#include "util/data.h"
+#include "display/window.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glad/glad.h>

@@ -1,5 +1,5 @@
-#include "window.h"
-#include "exception.h"
+#include "display/window.h"
+#include "util/exception.h"
 
 #include <iostream>
 

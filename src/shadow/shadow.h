@@ -1,7 +1,7 @@
 #ifndef SHADOW_H
 #define SHADOW_H
 
-#include "shader.h"
+#include "shader/shader.h"
 
 #include <vector>
 #include <memory>

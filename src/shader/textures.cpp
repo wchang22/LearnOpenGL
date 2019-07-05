@@ -1,5 +1,5 @@
 #include "textures.h"
-#include "exception.h"
+#include "util/exception.h"
 
 #include <algorithm>
 

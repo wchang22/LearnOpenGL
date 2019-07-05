@@ -6,11 +6,11 @@
 #include <glm/glm.hpp>
 
 #include "camera.h"
-#include "shader.h"
-#include "textures.h"
-#include "model.h"
-#include "directional_shadow.h"
-#include "point_shadow.h"
+#include "shader/shader.h"
+#include "shader/textures.h"
+#include "model/model.h"
+#include "shadow/directional_shadow.h"
+#include "shadow/point_shadow.h"
 
 typedef glm::vec3 vec3;
 typedef glm::mat3 mat3;

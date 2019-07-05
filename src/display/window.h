@@ -1,8 +1,8 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include "display.h"
-#include "camera.h"
+#include "display/display.h"
+#include "display/camera.h"
 
 #include <memory>
 

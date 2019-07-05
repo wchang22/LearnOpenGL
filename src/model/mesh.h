@@ -6,8 +6,8 @@
 
 #include <glm/glm.hpp>
 
-#include "shader.h"
-#include "textures.h"
+#include "shader/shader.h"
+#include "shader/textures.h"
 
 typedef glm::vec4 vec4;
 typedef glm::vec3 vec3;

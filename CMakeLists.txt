@@ -7,6 +7,7 @@ project(learnopengl)
 
 include_directories(include)
 link_directories(include)
+include_directories(src)
 
 find_package(assimp REQUIRED)
 find_package(OpenMP REQUIRED)

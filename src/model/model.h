@@ -5,8 +5,8 @@
 
 #include <assimp/scene.h>
 
-#include "shader.h"
-#include "mesh.h"
+#include "shader/shader.h"
+#include "model/mesh.h"
 
 typedef Mesh::Vertex Vertex;
 typedef glm::mat4 mat4;

@@ -1,7 +1,7 @@
 #ifndef DIRECTIONAL_SHADOW_H
 #define DIRECTIONAL_SHADOW_H
 
-#include "shadow.h"
+#include "shadow/shadow.h"
 
 class DirectionalShadow : public Shadow
 {

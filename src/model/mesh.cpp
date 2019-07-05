@@ -1,5 +1,5 @@
 #include "mesh.h"
-#include "exception.h"
+#include "util/exception.h"
 
 #include <utility>
 

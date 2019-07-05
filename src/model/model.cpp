@@ -1,5 +1,5 @@
 #include "model.h"
-#include "exception.h"
+#include "util/exception.h"
 
 #include <utility>
 

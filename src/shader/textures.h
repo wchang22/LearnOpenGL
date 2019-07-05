@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "shader.h"
+#include "shader/shader.h"
 
 #include <glad/glad.h>
 

@@ -1,5 +1,5 @@
 #include "shader.h"
-#include "exception.h"
+#include "util/exception.h"
 
 #include <fstream>
 #include <iostream>

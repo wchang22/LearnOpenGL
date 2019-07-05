@@ -1,5 +1,5 @@
 #include "window.h"
-#include "exception.h"
+#include "util/exception.h"
 
 const float MOUSE_SENSITIVITY = 0.05f;
 static float delta_fovy = 0.0f;

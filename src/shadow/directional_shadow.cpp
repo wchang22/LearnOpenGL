@@ -1,5 +1,5 @@
 #include "directional_shadow.h"
-#include "exception.h"
+#include "util/exception.h"
 
 #include <glad/glad.h>
 

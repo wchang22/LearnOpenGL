@@ -1,7 +1,7 @@
 #ifndef POINT_SHADOW_H
 #define POINT_SHADOW_H
 
-#include "shadow.h"
+#include "shadow/shadow.h"
 
 class PointShadow : public Shadow
 {
