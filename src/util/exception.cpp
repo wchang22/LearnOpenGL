@@ -1,44 +1,14 @@
 #include "exception.h"
 
-Exception::WindowException::WindowException(const char* msg) : std::runtime_error(msg) {}
+GENERATE_EXCEPTION_IMPL(ShaderException)
+GENERATE_EXCEPTION_IMPL(WindowException)
+GENERATE_EXCEPTION_IMPL(DisplayException)
+GENERATE_EXCEPTION_IMPL(TextureException)
+GENERATE_EXCEPTION_IMPL(MeshException)
+GENERATE_EXCEPTION_IMPL(ModelException)
+GENERATE_EXCEPTION_IMPL(ShadowException)
+GENERATE_EXCEPTION_IMPL(FrameBufferException)
 
-const char* Exception::WindowException::what() const noexcept {
-  return std::runtime_error::what();
-}
 
-Exception::ShaderException::ShaderException(const char* msg) : std::runtime_error(msg) {}
 
-const char* Exception::ShaderException::what() const noexcept {
-  return std::runtime_error::what();
-}
-
-Exception::DisplayException::DisplayException(const char* msg) : std::runtime_error(msg) {}
-
-const char* Exception::DisplayException::what() const noexcept {
-  return std::runtime_error::what();
-}
-
-Exception::TextureException::TextureException(const char* msg) : std::runtime_error(msg) {}
-
-const char* Exception::TextureException::what() const noexcept {
-  return std::runtime_error::what();
-}
-
-Exception::MeshException::MeshException(const char* msg) : std::runtime_error(msg) {}
-
-const char* Exception::MeshException::what() const noexcept {
-  return std::runtime_error::what();
-}
-
-Exception::ModelException::ModelException(const char* msg) : std::runtime_error(msg) {}
-
-const char* Exception::ModelException::what() const noexcept {
-  return std::runtime_error::what();
-}
-
-Exception::ShadowException::ShadowException(const char* msg) : std::runtime_error(msg) {}
-
-const char* Exception::ShadowException::what() const noexcept {
-  return std::runtime_error::what();
-}
 

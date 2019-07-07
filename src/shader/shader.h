@@ -11,7 +11,7 @@ public:
   ~Shader();
 
   void use_shader_program() const;
-  int get_uniform_location(const char* uniform) const;
+  int get_uniform_location(std::string_view uniform) const;
 
 private:
   static std::string read_source(const char* path);

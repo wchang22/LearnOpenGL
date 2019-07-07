@@ -2,45 +2,26 @@
 #define EXCEPTION_H
 
 #include <stdexcept>
+#include <string_view>
 
-class Exception
-{
-public:
+#define GENERATE_EXCEPTION_HEADER(name)                                        \
+  struct name : public std::runtime_error {                                    \
+    name(std::string_view msg) : std::runtime_error(msg.data()) {}             \
+    const char* what() const noexcept override;                                \
+  };                                                                           \
 
-  struct ShaderException : public std::runtime_error {
-    ShaderException(const char* msg);
-    const char* what() const noexcept override;
-  };
+#define GENERATE_EXCEPTION_IMPL(name)                                          \
+  const char* name::what() const noexcept {                                    \
+    return std::runtime_error::what();                                         \
+  }                                                                            \
 
-  struct WindowException : public std::runtime_error {
-    WindowException(const char* msg);
-    const char* what() const noexcept override;
-  };
-
-  struct DisplayException : public std::runtime_error {
-    DisplayException(const char* msg);
-    const char* what() const noexcept override;
-  };
-
-  struct TextureException : public std::runtime_error {
-    TextureException(const char* msg);
-    const char* what() const noexcept override;
-  };
-
-  struct MeshException : public std::runtime_error {
-    MeshException(const char* msg);
-    const char* what() const noexcept override;
-  };
-
-  struct ModelException : public std::runtime_error {
-    ModelException(const char* msg);
-    const char* what() const noexcept override;
-  };
-
-  struct ShadowException : public std::runtime_error {
-    ShadowException(const char* msg);
-    const char* what() const noexcept override;
-  };
-};
+GENERATE_EXCEPTION_HEADER(ShaderException)
+GENERATE_EXCEPTION_HEADER(WindowException)
+GENERATE_EXCEPTION_HEADER(DisplayException)
+GENERATE_EXCEPTION_HEADER(TextureException)
+GENERATE_EXCEPTION_HEADER(MeshException)
+GENERATE_EXCEPTION_HEADER(ModelException)
+GENERATE_EXCEPTION_HEADER(ShadowException)
+GENERATE_EXCEPTION_HEADER(FrameBufferException)
 
 #endif // EXCEPTION_H

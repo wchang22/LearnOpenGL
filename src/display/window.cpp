@@ -19,7 +19,7 @@ Window::Window()
   if (!window) {
     glfwDestroyWindow(window);
     glfwTerminate();
-    throw Exception::WindowException("Failed to create GLFW Window");
+    throw WindowException("Failed to create GLFW Window");
   }
 
   glfwMakeContextCurrent(window);
@@ -27,7 +27,7 @@ Window::Window()
   if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
     glfwDestroyWindow(window);
     glfwTerminate();
-    throw Exception::WindowException("Failed to create initialize GLAD");
+    throw WindowException("Failed to create initialize GLAD");
   }
 
   glViewport(0, 0, width, height);
@@ -42,9 +42,8 @@ Window::Window()
   try {
     display = std::make_unique<Display>(camera);
   } catch (...) {
-    std::exception_ptr ptr = std::current_exception();
     glfwDestroyWindow(window);
-    std::rethrow_exception(ptr);
+    std::rethrow_exception(std::current_exception());
   }
 }
 
@@ -74,9 +73,8 @@ void Window::main_loop() {
       mouse_callback();
     }
   } catch (...) {
-    std::exception_ptr ptr = std::current_exception();
     glfwDestroyWindow(window);
-    std::rethrow_exception(ptr);
+    std::rethrow_exception(std::current_exception());
   }
 }
 
@@ -130,12 +128,11 @@ void Window::key_callback() {
 }
 
 void Window::mouse_callback() {
-  static bool first_time = true;
   static double prev_x, prev_y;
   double x, y;
   glfwGetCursorPos(window, &x, &y);
 
-  if (first_time) {
+  if (static bool first_time = true; first_time) {
     prev_x = x;
     prev_y = y;
     first_time = false;
@@ -153,9 +150,7 @@ void Window::mouse_callback() {
 }
 
 void Window::cycle_fill_mode() {
-  static GLenum fill_mode = GL_FILL;
-
-  switch (fill_mode) {
+  switch (static GLenum fill_mode = GL_FILL; fill_mode) {
     case GL_FILL:
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       fill_mode = GL_LINE;

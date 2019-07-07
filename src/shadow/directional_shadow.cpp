@@ -24,7 +24,7 @@ DirectionalShadow::DirectionalShadow(int width, int height, int window_width, in
   glReadBuffer(GL_NONE);
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    throw Exception::ShadowException("Failed to generate directional shadow framebuffer");
+    throw ShadowException("Failed to generate directional shadow framebuffer");
   }
 
   mat4 light_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 10.0f);

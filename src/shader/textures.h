@@ -11,13 +11,13 @@
 class Textures
 {
 public:
-  Textures();
+  Textures() = default;
   ~Textures();
   Textures(Textures&& other) noexcept;
 
   Textures& operator=(Textures&& other) noexcept;
 
-  void load_texture_from_image(const char* path, std::string_view type);
+  void load_texture_from_image(std::string_view path, std::string_view type);
   void load_cubemap(const std::vector<std::string>& faces);
   void use_textures(const Shader& shader) const;
   void append(Textures&& other);

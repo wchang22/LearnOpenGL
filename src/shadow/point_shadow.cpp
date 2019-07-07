@@ -25,7 +25,7 @@ PointShadow::PointShadow(int width, int height, int window_width, int window_hei
   glReadBuffer(GL_NONE);
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    throw Exception::ShadowException("Failed to generate point shadow framebuffer");
+    throw ShadowException("Failed to generate point shadow framebuffer");
   }
 
   const float near_plane = 1.0f;
@@ -42,8 +42,8 @@ PointShadow::PointShadow(int width, int height, int window_width, int window_hei
     { vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f) },
   };
 
-  for (auto& lookat : lookats) {
-    views.emplace_back(perspective * glm::lookAt(position, position + lookat.first, lookat.second));
+  for (const auto& [center, up] : lookats) {
+    views.emplace_back(perspective * glm::lookAt(position, position + center, up));
   }
 
   glGenBuffers(1, &UBO);
@@ -65,13 +65,13 @@ PointShadow::~PointShadow()
 }
 
 void PointShadow::bind_shadow_map(const char* uniform_name,
-                             const std::vector<std::shared_ptr<Shader>>& shaders) const
+                                  const std::vector<std::shared_ptr<Shader>>& shaders) const
 {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, Shadow::window_width, Shadow::window_height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  for (auto shader : shaders) {
+  for (const auto& shader : shaders) {
     shader->use_shader_program();
     glActiveTexture(GL_TEXTURE31);
     glUniform1i(shader->get_uniform_location(uniform_name), 31);

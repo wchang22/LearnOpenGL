@@ -22,6 +22,7 @@ void Shadow::bind_depth_map() const
   glViewport(0, 0, width, height);
   glBindFramebuffer(GL_FRAMEBUFFER, FBO);
   glClear(GL_DEPTH_BUFFER_BIT);
+  glEnable(GL_DEPTH_TEST);
 }
 
 void Shadow::bind_shadow_map(const char* uniform_name,
@@ -31,7 +32,7 @@ void Shadow::bind_shadow_map(const char* uniform_name,
   glViewport(0, 0, window_width, window_height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  for (auto shader : shaders) {
+  for (const auto& shader : shaders) {
     shader->use_shader_program();
     glActiveTexture(GL_TEXTURE30);
     glUniform1i(shader->get_uniform_location(uniform_name), 30);

@@ -15,7 +15,8 @@ const vec3 point_light_pos = vec3(0.0f, 3.0f, 2.0f);
 Display::Display(std::shared_ptr<Camera> camera)
   : camera(camera),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj"),
-    point_shadow(1024, 1024, Window::width(), Window::height(), point_light_pos)
+    point_shadow(1024, 1024, Window::width(), Window::height(), point_light_pos),
+    fb(Window::width(), Window::height())
 {
   srand(static_cast<unsigned int>(time(nullptr)));
 
@@ -55,11 +56,15 @@ void Display::draw() const {
   point_shadow.bind_shadow_map("shadow_map", { shaders, model_shaders });
   set_lights();
 
+  fb.bind_framebuffer();
+
   draw_cubes(*shaders);
   draw_box(*shaders);
   draw_model(*model_shaders);
   draw_lights(*light_shaders);
   draw_skybox();
+
+  fb.draw_scene();
 }
 
 void Display::generate_cube_vertices(float in[192], float out[504])

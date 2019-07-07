@@ -28,14 +28,13 @@ void Model::draw_instanced(const Shader& shader, unsigned int num_times) const
 void Model::load_model(std::string_view path)
 {
   Assimp::Importer importer;
-  const aiScene* scene = importer.ReadFile(std::string(path.data()).c_str(),
+  const aiScene* scene = importer.ReadFile(path.data(),
                                            aiProcess_Triangulate |
                                            aiProcess_FlipUVs |
                                            aiProcess_CalcTangentSpace);
 
   if (!scene || !scene->mRootNode || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) {
-    throw Exception::ModelException((std::string("Assimp Error: ") +
-                                     importer.GetErrorString()).c_str());
+    throw ModelException(std::string("Assimp Error: ") + importer.GetErrorString());
   }
 
   directory = path.substr(0, static_cast<size_t>(path.find_last_of('/')) + 1);
@@ -58,7 +57,8 @@ void Model::process_node(aiNode* node, const aiScene* scene)
 Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
 {
   std::vector<Vertex> vertices;
-  std::vector<unsigned int> indices;
+  vertices.reserve(mesh->mNumVertices);
+  std::vector<unsigned int> indices(mesh->mNumVertices);
   Textures textures;
 
   for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -111,7 +111,7 @@ Textures Model::load_material_textures(aiMaterial* material, aiTextureType type,
   for (unsigned int i = 0; i < material->GetTextureCount(type); i++) {
     aiString path;
     material->GetTexture(type, i, &path);
-    textures.load_texture_from_image((directory + path.C_Str()).c_str(), type_name);
+    textures.load_texture_from_image(directory + path.C_Str(), type_name);
   }
 
   return textures;

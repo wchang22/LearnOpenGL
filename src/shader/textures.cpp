@@ -5,11 +5,6 @@
 
 #include <stb_image/stb_image.h>
 
-Textures::Textures()
-  : texture_ids(), texture_paths(), texture_types()
-{
-}
-
 Textures::~Textures() {
   glDeleteTextures(static_cast<int>(texture_ids.size()), texture_ids.data());
 }
@@ -31,10 +26,9 @@ Textures& Textures::operator=(Textures&& other) noexcept
   return *this;
 }
 
-void Textures::load_texture_from_image(const char* path, std::string_view type) {
-  auto it = std::find(texture_paths.begin(), texture_paths.end(), path);
-
-  if (it != texture_paths.end()) {
+void Textures::load_texture_from_image(std::string_view path, std::string_view type) {
+  if (auto it = std::find(texture_paths.begin(), texture_paths.end(), path);
+      it != texture_paths.end()) {
     unsigned int i = static_cast<unsigned int>(std::distance(texture_paths.begin(), it));
     texture_ids.emplace_back(texture_ids[i]);
     texture_paths.emplace_back(texture_paths[i]);
@@ -43,11 +37,10 @@ void Textures::load_texture_from_image(const char* path, std::string_view type) 
   }
 
   int width, height, num_channels;
-  unsigned char* image_data = stbi_load(path, &width, &height, &num_channels, 0);
+  unsigned char* image_data = stbi_load(path.data(), &width, &height, &num_channels, 0);
 
   if (!image_data) {
-    throw Exception::TextureException(("Failed to load texture from " +
-                                      std::string(path)).c_str());
+    throw TextureException("Failed to load texture from " + std::string(path));
   }
 
   const int mipmap_level = 0;
@@ -68,11 +61,10 @@ void Textures::load_texture_from_image(const char* path, std::string_view type) 
       break;
     default:
       stbi_image_free(image_data);
-      throw Exception::TextureException(("Invalid image type from " +
-                                         std::string(path)).c_str());
+      throw TextureException("Invalid image type from " + std::string(path));
   }
 
-  texture_types.emplace_back(std::move(type));
+  texture_types.emplace_back(type);
   texture_paths.emplace_back(path);
   texture_ids.emplace_back(0);
   glGenTextures(1, &texture_ids.back());
@@ -110,8 +102,7 @@ void Textures::load_cubemap(const std::vector<std::string>& faces)
     unsigned char* image_data = stbi_load(path, &width, &height, &num_channels, 0);
 
     if (!image_data) {
-      throw Exception::TextureException(("Failed to load cubemap texture from " +
-                                         std::string(path)).c_str());
+      throw TextureException("Failed to load cubemap texture from " + std::string(path));
     }
 
     const int mipmap_level = 0;
@@ -159,10 +150,10 @@ void Textures::use_textures(const Shader& shader) const {
     } else if (name == "texture_cubemap") {
       number = std::to_string(num_cubemap++);
     } else {
-      throw Exception::TextureException("Invalid texture type");
+      throw TextureException("Invalid texture type");
     }
 
-    glUniform1i(shader.get_uniform_location((name + number).c_str()), static_cast<GLint>(i));
+    glUniform1i(shader.get_uniform_location(name + number), static_cast<GLint>(i));
 
     if (name == "texture_cubemap") {
       glBindTexture(GL_TEXTURE_CUBE_MAP, texture_ids[i]);

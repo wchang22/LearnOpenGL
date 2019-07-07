@@ -18,8 +18,7 @@ Shader::Shader(const char* path_vertex, const char* path_fragment,
   glCompileShader(vertex_shader);
 
   if (!check_shader_errors(vertex_shader)) {
-    throw Exception::ShaderException(("Failed to compile " + std::string(path_vertex) +
-                                     ", check above log").c_str());
+    throw ShaderException("Failed to compile " + std::string(path_vertex) + ", check above log");
   }
 
   fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -27,8 +26,7 @@ Shader::Shader(const char* path_vertex, const char* path_fragment,
   glCompileShader(fragment_shader);
 
   if (!check_shader_errors(fragment_shader)) {
-    throw Exception::ShaderException(("Failed to compile " + std::string(path_fragment) +
-                                      ", check above log").c_str());
+    throw ShaderException("Failed to compile " + std::string(path_fragment) + ", check above log");
   }
 
   shader_program = glCreateProgram();
@@ -42,8 +40,8 @@ Shader::Shader(const char* path_vertex, const char* path_fragment,
     glCompileShader(geometry_shader);
 
     if (!check_shader_errors(geometry_shader)) {
-      throw Exception::ShaderException(("Failed to compile " + std::string(path_geometry.value()) +
-                                        ", check above log").c_str());
+      throw ShaderException("Failed to compile " + std::string(path_geometry.value()) +
+                            ", check above log");
     }
 
     glAttachShader(shader_program, geometry_shader);
@@ -54,7 +52,7 @@ Shader::Shader(const char* path_vertex, const char* path_fragment,
   glLinkProgram(shader_program);
 
   if (!check_program_errors(shader_program)) {
-    throw Exception::ShaderException("Failed to link shaders, check above log");
+    throw ShaderException("Failed to link shaders, check above log");
   }
 }
 
@@ -69,8 +67,8 @@ void Shader::use_shader_program() const {
   glUseProgram(shader_program);
 }
 
-int Shader::get_uniform_location(const char* uniform) const {
-  return glGetUniformLocation(shader_program, uniform);
+int Shader::get_uniform_location(std::string_view uniform) const {
+  return glGetUniformLocation(shader_program, uniform.data());
 }
 
 std::string Shader::read_source(const char* path) {
@@ -78,8 +76,7 @@ std::string Shader::read_source(const char* path) {
   std::string source;
 
   if (!file.is_open()) {
-    throw Exception::ShaderException(("Cannot open file " +
-                                      std::string(path)).c_str());
+    throw ShaderException("Cannot open file " + std::string(path));
   }
 
   std::string line;
