@@ -264,17 +264,17 @@ void Display::init_textures() {
 }
 
 void Display::init_shaders() {
-  shaders = std::make_unique<Shader>("../../shaders/cube_vertex.glsl",
-                                     "../../shaders/cube_fragment.glsl");
-  light_shaders = std::make_unique<Shader>("../../shaders/light_vertex.glsl",
-                                           "../../shaders/light_fragment.glsl");
-  model_shaders = std::make_unique<Shader>("../../shaders/model_vertex.glsl",
-                                           "../../shaders/model_fragment.glsl");
-  skybox_shaders = std::make_unique<Shader>("../../shaders/skybox_vertex.glsl",
-                                            "../../shaders/skybox_fragment.glsl");
-  point_depth_shaders = std::make_unique<Shader>("../../shaders/point_depth_vertex.glsl",
-                                                 "../../shaders/point_depth_fragment.glsl",
-                                                 "../../shaders/point_depth_geometry.glsl");
+  shaders = std::make_unique<Shader>("../../shaders/object/cube.vert",
+                                     "../../shaders/object/cube.frag");
+  light_shaders = std::make_unique<Shader>("../../shaders/object/light.vert",
+                                           "../../shaders/object/light.frag");
+  model_shaders = std::make_unique<Shader>("../../shaders/object/model.vert",
+                                           "../../shaders/object/model.frag");
+  skybox_shaders = std::make_unique<Shader>("../../shaders/object/skybox.vert",
+                                            "../../shaders/object/skybox.frag");
+  point_depth_shaders = std::make_unique<Shader>("../../shaders/shadow/point_depth.vert",
+                                                 "../../shaders/shadow/point_depth.frag",
+                                                 "../../shaders/shadow/point_depth.geom");
 }
 
 void Display::set_lights() const

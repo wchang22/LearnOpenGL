@@ -10,7 +10,7 @@ FrameBuffer::FrameBuffer(int width, int height,
                          bool stencil)
   : width(width),
     height(height),
-    shader("../../shaders/fb_vertex.glsl", "../../shaders/fb_fragment.glsl")
+    shader("../../shaders/processing/fb.vert", "../../shaders/processing/fb.frag")
 {
   auto [color_buffer_format, rb_storage_type, rb_attachment_type] =
       get_buffer_types(buffer_num_bits, buffer_type, stencil);
