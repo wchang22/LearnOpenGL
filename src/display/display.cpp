@@ -12,11 +12,39 @@
 constexpr vec3 dir_light_dir = vec3(2.0f, -4.0f, 1.0f);
 constexpr vec3 point_light_pos = vec3(0.0f, 3.0f, 2.0f);
 
+struct DirLight {
+  vec3 direction;
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+};
+
+struct PointLight {
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+  vec3 attenuation;
+};
+
+constexpr DirLight dir_light {
+  dir_light_dir,
+  vec3(0.05f),
+  vec3(0.4f),
+  vec3(0.5f),
+};
+
+constexpr PointLight point_light {
+  vec3(0.05f),
+  vec3(5.0f),
+  vec3(1.0f),
+  vec3(1.0f, 0.045f, 0.016f),
+};
+
 Display::Display(std::shared_ptr<Camera> camera)
   : camera(camera),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj"),
     point_shadow(1024, 1024, Window::width(), Window::height(), point_light_pos),
-    fb(Window::width(), Window::height(), 16, GL_FLOAT)
+    fb(Window::width(), Window::height(), 2, 16, GL_FLOAT)
 {
   srand(static_cast<unsigned int>(time(nullptr)));
 
@@ -64,6 +92,7 @@ void Display::draw() const {
   draw_lights(*light_shaders);
   draw_skybox();
 
+  fb.unbind_framebuffer();
   fb.draw_scene();
 }
 
@@ -250,34 +279,6 @@ void Display::init_shaders() {
 
 void Display::set_lights() const
 {
-  struct DirLight {
-    vec3 direction;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-  };
-
-  static DirLight dir_light {
-    dir_light_dir,
-    vec3(0.05f),
-    vec3(0.4f),
-    vec3(0.5f),
-  };
-
-  struct PointLight {
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-    vec3 attenuation;
-  };
-
-  static PointLight point_light {
-    vec3(0.05f),
-    vec3(0.8f),
-    vec3(1.0f),
-    vec3(1.0f, 0.045f, 0.016f),
-  };
-
   glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
 
   float shininess = 32.0f;

@@ -28,7 +28,8 @@ in V_DATA {
     vec3 tangent_frag_pos;
 } fs_in;
 
-out vec4 frag_color;
+layout (location = 0) out vec4 frag_color;
+layout (location = 1) out vec4 bright_color;
 
 layout (std140, binding = 1) uniform Lights {
     DirLight dir_light;
@@ -102,6 +103,14 @@ float calc_shadow(PointLight light, vec3 position, vec3 normal) {
     return shadow / float(samples);
 }
 
+vec3 filter_bright_colors(vec3 color) {
+    if (dot(color, vec3(0.2126, 0.7152, 0.0722)) > 1.0) {
+        return color;
+    } else {
+        return vec3(0.0);
+    }
+}
+
 void main() {
     vec3 normal = texture(texture_normal1, fs_in.texture_coords).rgb;
 
@@ -122,4 +131,5 @@ void main() {
                                   diffuse_texture, vec3(0.2), material_shininess, shadow);
 
     frag_color = vec4(color, 1.0);
+    bright_color = vec4(filter_bright_colors(color), 1.0);
 }

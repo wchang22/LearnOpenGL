@@ -29,7 +29,8 @@ in V_DATA {
     vec3 tangent_frag_pos;
 } fs_in;
 
-out vec4 frag_color;
+layout (location = 0) out vec4 frag_color;
+layout (location = 1) out vec4 bright_color;
 
 layout (std140, binding = 1) uniform Lights {
     DirLight dir_light;
@@ -131,6 +132,14 @@ vec2 parallax_mapping(vec2 texture_coords, vec3 eye_direction) {
     return mix(current_texture_coords, prev_texture_coords, weight);
 }
 
+vec3 filter_bright_colors(vec3 color) {
+    if (dot(color, vec3(0.2126, 0.7152, 0.0722)) > 1.0) {
+        return color;
+    } else {
+        return vec3(0.0);
+    }
+}
+
 void main() {
     vec3 eye_direction = normalize(fs_in.tangent_view_pos - fs_in.tangent_frag_pos);
     vec2 texture_coords = parallax_mapping(fs_in.texture_coords, eye_direction);
@@ -146,4 +155,5 @@ void main() {
                                   diffuse_texture, vec3(0.2), material_shininess, shadow);
 
     frag_color = vec4(color, 1.0);
+    bright_color = vec4(filter_bright_colors(color), 1.0);
 }
