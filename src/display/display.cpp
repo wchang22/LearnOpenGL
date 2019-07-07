@@ -9,8 +9,8 @@
 #include <assimp/scene.h>
 #include <algorithm>
 
-const vec3 dir_light_dir = vec3(2.0f, -4.0f, 1.0f);
-const vec3 point_light_pos = vec3(0.0f, 3.0f, 2.0f);
+constexpr vec3 dir_light_dir = vec3(2.0f, -4.0f, 1.0f);
+constexpr vec3 point_light_pos = vec3(0.0f, 3.0f, 2.0f);
 
 Display::Display(std::shared_ptr<Camera> camera)
   : camera(camera),

@@ -17,7 +17,8 @@ public:
   void draw_scene() const;
 
 private:
-  unsigned int VAO, VBO, FBO, RBO, color_texture;
+  unsigned int VAO, VBO, multiFBO, interFBO, RBO, multi_color_texture, inter_color_texture;
+  int width, height;
   Shader shader;
 };
 

@@ -43,7 +43,7 @@ void Textures::load_texture_from_image(std::string_view path, std::string_view t
     throw TextureException("Failed to load texture from " + std::string(path));
   }
 
-  const int mipmap_level = 0;
+  constexpr int mipmap_level = 0;
   const int texture_type = (type == "texture_normal" || type == "texture_height")
                             ? GL_RGBA : GL_SRGB_ALPHA;
   const GLenum image_type = GL_UNSIGNED_BYTE;
@@ -105,10 +105,10 @@ void Textures::load_cubemap(const std::vector<std::string>& faces)
       throw TextureException("Failed to load cubemap texture from " + std::string(path));
     }
 
-    const int mipmap_level = 0;
-    const int texture_type = GL_SRGB;
-    const int image_format = GL_RGB;
-    const GLenum image_type = GL_UNSIGNED_BYTE;
+    constexpr int mipmap_level = 0;
+    constexpr int texture_type = GL_SRGB;
+    constexpr int image_format = GL_RGB;
+    constexpr GLenum image_type = GL_UNSIGNED_BYTE;
 
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mipmap_level, texture_type,
                  width, height, 0, image_format, image_type, image_data);

@@ -1,7 +1,8 @@
 #include "window.h"
 #include "util/exception.h"
+#include "util/data.h"
 
-const float MOUSE_SENSITIVITY = 0.05f;
+constexpr float MOUSE_SENSITIVITY = 0.05f;
 static float delta_fovy = 0.0f;
 
 Window::Window()
@@ -10,7 +11,7 @@ Window::Window()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_SAMPLES, 4);
+  glfwWindowHint(GLFW_SAMPLES, num_aa_samples);
 
   const int width = Window::width();
   const int height = Window::height();

@@ -28,12 +28,12 @@ PointShadow::PointShadow(int width, int height, int window_width, int window_hei
     throw ShadowException("Failed to generate point shadow framebuffer");
   }
 
-  const float near_plane = 1.0f;
-  const float far_plane = 25.0f;
+  constexpr float near_plane = 1.0f;
+  constexpr float far_plane = 25.0f;
   mat4 perspective = glm::perspective(glm::radians(90.0f), static_cast<float>(width) / height,
                                       near_plane, far_plane);
   std::vector<mat4> views;
-  const std::pair<vec3, vec3> lookats[6] {
+  constexpr std::pair<vec3, vec3> lookats[6] {
     { vec3(1.0f, 0.0f, 0.0f),  vec3(0.0f, -1.0f, 0.0f) },
     { vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f) },
     { vec3(0.0f, 1.0f, 0.0f),  vec3(0.0f, 0.0f, 1.0f) },

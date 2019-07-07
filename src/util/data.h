@@ -8,6 +8,8 @@
 typedef glm::vec3 vec3;
 typedef glm::mat4 mat4;
 
+constexpr int num_aa_samples = 8;
+
 static float cubeVertices[] = {
   -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
    0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
