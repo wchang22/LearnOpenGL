@@ -16,7 +16,7 @@ Display::Display(std::shared_ptr<Camera> camera)
   : camera(camera),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj"),
     point_shadow(1024, 1024, Window::width(), Window::height(), point_light_pos),
-    fb(Window::width(), Window::height())
+    fb(Window::width(), Window::height(), 16, GL_FLOAT)
 {
   srand(static_cast<unsigned int>(time(nullptr)));
 
