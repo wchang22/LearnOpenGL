@@ -17,4 +17,31 @@ file(GLOB_RECURSE SOURCES src/* shaders/* include/*)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lglfw -lGL -ldl -fopenmp -lassimp")
 
+option(RELEASE "Build in release mode" ON)
+option(LOG "Enable logging" OFF)
+option(PROFILE "Enable profiling" OFF)
+
+if (RELEASE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+    set(LOG OFF)
+    set(PROFILE OFF)
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra")
+    set(LOG ON)
+    set(PROFILE ON)
+endif()
+
+if (LOG)
+    add_definitions(-DLOG)
+endif()
+
+if (PROFILE)
+    add_definitions(-DPROFILE)
+endif()
+
+message("Build Options -----------------------------------")
+message("RELEASE ----------------------------------------- ${RELEASE}")
+message("LOG --------------------------------------------- ${LOG}")
+message("PROFILE ----------------------------------------- ${PROFILE}")
+
 add_executable(${PROJECT_NAME} ${SOURCES})

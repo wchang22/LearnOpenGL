@@ -1,6 +1,7 @@
 #include "window.h"
 #include "util/exception.h"
 #include "util/data.h"
+#include "util/profiling/profiling.h"
 
 constexpr float MOUSE_SENSITIVITY = 0.05f;
 static float delta_fovy = 0.0f;
@@ -60,18 +61,30 @@ void Window::main_loop() {
 
   try {
     while (!glfwWindowShouldClose(window)) {
+      TIME_SCOPE_FPS("Main Loop")
+
       glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+      TIME_SCOPE_SECTION_START("Update Camera")
       camera->update_frames();
       camera->update_fov(delta_fovy);
       delta_fovy = 0.0f;
-      display->draw();
+      TIME_SCOPE_SECTION_END()
 
+      TIME_SCOPE_SECTION_START("Draw display")
+      display->draw();
+      TIME_SCOPE_SECTION_END()
+
+      TIME_SCOPE_SECTION_START("Swap buffers")
       glfwSwapBuffers(window);
+      TIME_SCOPE_SECTION_END()
+
+      TIME_SCOPE_SECTION_START("IO Events")
       glfwPollEvents();
       key_callback();
       mouse_callback();
+      TIME_SCOPE_SECTION_END()
     }
   } catch (...) {
     glfwDestroyWindow(window);
