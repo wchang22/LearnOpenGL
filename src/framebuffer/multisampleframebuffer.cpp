@@ -3,12 +3,14 @@
 #include "util/data.h"
 
 MultiSampleFrameBuffer::MultiSampleFrameBuffer(int width, int height,
+                                               const char* vertex_path, const char* frag_path,
                                                unsigned int num_buffers,
                                                int buffer_num_bits,
                                                GLenum buffer_type,
                                                bool renderbuffer,
                                                bool stencil)
-  : FrameBuffer (width, height, num_buffers, buffer_num_bits, buffer_type, false, stencil)
+  : FrameBuffer (width, height, vertex_path, frag_path,
+                 num_buffers, buffer_num_bits, buffer_type, false, stencil)
 {
   auto [color_buffer_format, rb_storage_type, rb_attachment_type] =
       get_buffer_types(buffer_num_bits, buffer_type, stencil);

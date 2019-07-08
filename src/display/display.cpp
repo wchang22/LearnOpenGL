@@ -9,6 +9,7 @@
 #include <assimp/scene.h>
 #include <algorithm>
 
+
 constexpr vec3 dir_light_dir = vec3(2.0f, -4.0f, 1.0f);
 constexpr vec3 point_light_pos = vec3(0.0f, 3.0f, 2.0f);
 
@@ -35,8 +36,8 @@ constexpr DirLight dir_light {
 
 constexpr PointLight point_light {
   vec3(0.05f),
-  vec3(5.0f),
-  vec3(1.0f),
+  vec3(10.0f, 10.0f, 6.0f),
+  vec3(5.0f, 5.0f, 3.0f),
   vec3(1.0f, 0.045f, 0.016f),
 };
 
@@ -44,7 +45,9 @@ Display::Display(std::shared_ptr<Camera> camera)
   : camera(camera),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj"),
     point_shadow(1024, 1024, Window::width(), Window::height(), point_light_pos),
-    fb(Window::width(), Window::height(), 2, 16, GL_FLOAT)
+    fb(Window::width(), Window::height(),
+       "../../shaders/processing/blur.vert", "../../shaders/processing/blur.frag",
+       "../../shaders/processing/fb.vert", "../../shaders/processing/fb.frag")
 {
   srand(static_cast<unsigned int>(time(nullptr)));
 
@@ -93,6 +96,7 @@ void Display::draw() const {
   draw_skybox();
 
   fb.unbind_framebuffer();
+  fb.blur();
   fb.draw_scene();
 }
 

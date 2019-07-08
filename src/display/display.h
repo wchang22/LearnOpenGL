@@ -11,7 +11,7 @@
 #include "model/model.h"
 #include "shadow/directional_shadow.h"
 #include "shadow/point_shadow.h"
-#include "framebuffer/multisampleframebuffer.h"
+#include "framebuffer/gaussianblur.h"
 
 typedef glm::vec3 vec3;
 typedef glm::mat3 mat3;
@@ -53,7 +53,7 @@ private:
   Textures skybox_textures;
   Model model_nanosuit;
   PointShadow point_shadow;
-  MultiSampleFrameBuffer fb;
+  GaussianBlur fb;
 };
 
 #endif // DISPLAY_H

@@ -10,8 +10,11 @@
 
 class FrameBuffer
 {
+  friend class GaussianBlur;
+
 public:
   FrameBuffer(int width, int height,
+              const char* vertex_path, const char* frag_path,
               unsigned int num_buffers = 1,
               int buffer_num_bits = 8,
               GLenum buffer_type = GL_UNSIGNED_BYTE,

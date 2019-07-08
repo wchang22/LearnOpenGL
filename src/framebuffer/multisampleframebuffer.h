@@ -13,11 +13,12 @@ class MultiSampleFrameBuffer : public FrameBuffer
 {
 public:
   MultiSampleFrameBuffer(int width, int height,
-                          unsigned int num_buffers = 1,
-                          int buffer_num_bits = 8,
-                          GLenum buffer_type = GL_UNSIGNED_BYTE,
-                          bool renderbuffer = true,
-                          bool stencil = false);
+                         const char* vertex_path, const char* frag_path,
+                         unsigned int num_buffers = 1,
+                         int buffer_num_bits = 8,
+                         GLenum buffer_type = GL_UNSIGNED_BYTE,
+                         bool renderbuffer = true,
+                         bool stencil = false);
   ~MultiSampleFrameBuffer() override;
 
   void bind_framebuffer() const override;
