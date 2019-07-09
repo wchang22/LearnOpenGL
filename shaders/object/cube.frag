@@ -61,9 +61,8 @@ vec3 calc_dir_light(DirLight light, vec3 normal, vec3 eye_direction,
 vec3 calc_point_light(PointLight light, vec3 normal, vec3 light_pos, vec3 frag_position, vec3 eye_direction,
                       vec3 diffuse_texture, vec3 specular_texture, float shininess, float shadow) {
     float light_distance = distance(light_pos, frag_position);
-    float attenuation = 1.0 / (light.attenuation[0] +
-                               light.attenuation[1] * light_distance +
-                               light.attenuation[2] * light_distance * light_distance);
+    float attenuation = dot(light.attenuation,
+                            vec3(1.0, light_distance, light_distance * light_distance));
 
     vec3 light_direction = normalize(light_pos - frag_position);
     vec3 half_vec = normalize(eye_direction + light_direction);
@@ -73,7 +72,7 @@ vec3 calc_point_light(PointLight light, vec3 normal, vec3 light_pos, vec3 frag_p
     vec3 specular = light.specular * specular_texture *
                     pow(max(dot(normal, half_vec), 0.0), shininess);
 
-    return (ambient + (1 - shadow) * (diffuse + specular)) * attenuation;
+    return (ambient + (1 - shadow) * (diffuse + specular)) / attenuation;
 }
 
 float calc_shadow(PointLight light, vec3 position, vec3 normal) {
@@ -85,7 +84,7 @@ float calc_shadow(PointLight light, vec3 position, vec3 normal) {
     float disk_radius = (1.0 + distance(view_position, position) / far_plane) / 25.0;
     float shadow = 0;
 
-    const vec3 sampleOffsetDirections[samples] = vec3[]
+    const vec3 sample_offset_dirs[samples] = vec3[]
     (
        vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1),
        vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
@@ -95,8 +94,11 @@ float calc_shadow(PointLight light, vec3 position, vec3 normal) {
     );
 
     for (int i = 0; i < samples; i++) {
-        float closest_depth = texture(shadow_map, light_ray + sampleOffsetDirections[i] * disk_radius).r * far_plane;
-        shadow += current_depth - bias > closest_depth ? 1 : 0;
+        float closest_depth =
+                texture(shadow_map, light_ray + sample_offset_dirs[i] * disk_radius).r * far_plane;
+        if (current_depth - bias > closest_depth) {
+            shadow += 1;
+        }
     }
 
     return shadow / float(samples);
@@ -106,7 +108,7 @@ vec2 parallax_mapping(vec2 texture_coords, vec3 eye_direction) {
     const float height_scale = 0.1;
     const float min_layers = 8;
     const float max_layers = 32;
-    const float num_layers = mix(max_layers, min_layers, abs(dot(vec3(0.0, 0.0, 1.0), eye_direction)));
+    const float num_layers = mix(max_layers, min_layers, abs(eye_direction.z));
     const float layer_depth = 1.0 / num_layers;
     const vec2 p = eye_direction.xy * height_scale;
     const vec2 delta_texture_coords = p / num_layers;
