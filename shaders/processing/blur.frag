@@ -10,7 +10,7 @@ uniform float weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.0
 
 void main()
 {
-    const float tex_span = 4.0;
+    const float tex_span = 2.5;
     const int num_samples = 5;
     const vec2 tex_offset_size = tex_span / textureSize(image, 0);
     vec3 color = texture(image, texture_coords).rgb * weight[0];
