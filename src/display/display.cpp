@@ -36,8 +36,8 @@ constexpr DirLight dir_light {
 
 constexpr PointLight point_light {
   vec3(0.05f),
-  vec3(10.0f, 10.0f, 6.0f),
-  vec3(5.0f, 5.0f, 3.0f),
+  vec3(10.0f),
+  vec3(5.0f),
   vec3(1.0f, 0.045f, 0.016f),
 };
 

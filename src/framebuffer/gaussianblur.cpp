@@ -1,15 +1,10 @@
 #include "gaussianblur.h"
 
-static bool horizontal = true;
-
 GaussianBlur::GaussianBlur(int width, int height,
                            const char* blur_vertex_path, const char* blur_frag_path,
                            const char* fb_vertex_path, const char* fb_frag_path)
   : hdr_buffer(width, height, fb_vertex_path, fb_frag_path, 2, 16, GL_FLOAT, true, false),
-    blur_buffers { FrameBuffer(width, height, blur_vertex_path, blur_frag_path,
-                               1, 16, GL_FLOAT, false, false),
-                   FrameBuffer(width, height, blur_vertex_path, blur_frag_path,
-                               1, 16, GL_FLOAT, false, false)}
+    blur_buffer(width, height, blur_vertex_path, blur_frag_path, 1, 16, GL_FLOAT, false, false)
 {
 }
 
@@ -25,22 +20,24 @@ void GaussianBlur::unbind_framebuffer() const
 
 void GaussianBlur::blur() const
 {
-  constexpr int amount = 10;
+  constexpr int amount = 5;
 
-  blur_buffers[0].shader.use_shader_program();
+  blur_buffer.shader.use_shader_program();
 
   glActiveTexture(GL_TEXTURE0);
-  glUniform1i(blur_buffers[0].shader.get_uniform_location("image"), 0);
-  glBindVertexArray(blur_buffers[0].VAO);
+  glUniform1i(blur_buffer.shader.get_uniform_location("image"), 0);
+  glBindVertexArray(blur_buffer.VAO);
+  glBindFramebuffer(GL_FRAMEBUFFER, blur_buffer.FBO);
 
-  for (unsigned int i = 0; i < amount; i++) {
-    glBindFramebuffer(GL_FRAMEBUFFER, blur_buffers[horizontal].FBO);
-    glUniform1i(blur_buffers[0].shader.get_uniform_location("horizontal"), horizontal);
-    glBindTexture(GL_TEXTURE_2D, i == 0 ? hdr_buffer.color_textures[1] :
-                                          blur_buffers[!horizontal].color_textures.front());
+  glUniform1i(blur_buffer.shader.get_uniform_location("horizontal"), 0);
+  glBindTexture(GL_TEXTURE_2D, hdr_buffer.color_textures[1]);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+
+  glBindTexture(GL_TEXTURE_2D, blur_buffer.color_textures.front());
+
+  for (unsigned int i = 1; i < amount; i++) {
+    glUniform1i(blur_buffer.shader.get_uniform_location("horizontal"), (i & 1) == 0);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    horizontal = !horizontal;
   }
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -53,11 +50,11 @@ void GaussianBlur::draw_scene() const
 
   glActiveTexture(GL_TEXTURE0);
   glUniform1i(hdr_buffer.shader.get_uniform_location("hdr"), 0);
-  glBindTexture(GL_TEXTURE_2D, hdr_buffer.color_textures[0]);
+  glBindTexture(GL_TEXTURE_2D, hdr_buffer.color_textures.front());
 
   glActiveTexture(GL_TEXTURE1);
   glUniform1i(hdr_buffer.shader.get_uniform_location("bloom"), 1);
-  glBindTexture(GL_TEXTURE_2D, blur_buffers[!horizontal].color_textures.front());
+  glBindTexture(GL_TEXTURE_2D, blur_buffer.color_textures.front());
 
   glBindVertexArray(hdr_buffer.VAO);
   glDrawArrays(GL_TRIANGLES, 0, 6);

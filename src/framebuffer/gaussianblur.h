@@ -17,7 +17,7 @@ public:
 
 private:
   FrameBuffer hdr_buffer;
-  FrameBuffer blur_buffers[2];
+  FrameBuffer blur_buffer;
 };
 
 #endif // GAUSSIANBLUR_H
