@@ -28,7 +28,8 @@ out V_DATA {
 } vs_out;
 
 layout (std140, binding = 0) uniform Matrices {
-    mat4 world_space;
+    mat4 perspective;
+    mat4 view;
     mat4 model;
 };
 
@@ -54,5 +55,5 @@ void main() {
     vs_out.tangent_view_pos = tbn * view_position;
     vs_out.tangent_frag_pos = tbn * vs_out.position;
 
-    gl_Position = world_space * model * vec4(in_position, 1.0);
+    gl_Position = perspective * view * model * vec4(in_position, 1.0);
 }

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <unordered_set>
 
 #include "shader/shader.h"
 
@@ -19,15 +20,18 @@ public:
 
   void load_texture_from_image(std::string_view path, std::string_view type);
   void load_cubemap(const std::vector<std::string>& faces);
+  void add_texture(std::string_view type, unsigned int id);
   void use_textures(const Shader& shader) const;
   void append(Textures&& other);
   void append(const Textures& other);
+  void clear();
   size_t size() const;
 
 private:
-  std::vector<GLuint> texture_ids;
+  std::vector<unsigned int> texture_ids;
   std::vector<std::string> texture_paths;
   std::vector<std::string> texture_types;
+  std::unordered_set<unsigned int> external_ids;
 };
 
 static_assert (std::is_nothrow_move_constructible<Textures>::value, "Mesh not move constructible");

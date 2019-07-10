@@ -2,11 +2,12 @@
 #include "util/exception.h"
 
 #include <algorithm>
+#include <unordered_map>
 
 #include <stb_image/stb_image.h>
 
 Textures::~Textures() {
-  glDeleteTextures(static_cast<int>(texture_ids.size()), texture_ids.data());
+  clear();
 }
 
 Textures::Textures(Textures&& other) noexcept
@@ -124,36 +125,31 @@ void Textures::load_cubemap(const std::vector<std::string>& faces)
   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
+void Textures::add_texture(std::string_view type, unsigned int id)
+{
+  texture_ids.emplace_back(id);
+  texture_paths.emplace_back("");
+  texture_types.emplace_back(type);
+  external_ids.emplace(id);
+}
+
 void Textures::use_textures(const Shader& shader) const {
-  unsigned int num_diffuse = 1;
-  unsigned int num_specular = 1;
-  unsigned int num_reflection = 1;
-  unsigned int num_normal = 1;
-  unsigned int num_height = 1;
-  unsigned int num_cubemap = 1;
+  std::unordered_map<std::string, unsigned int> texture_counts;
 
   for (unsigned int i = 0; i < texture_ids.size(); i++) {
     glActiveTexture(GL_TEXTURE0 + i);
-    std::string number;
     const std::string& name = texture_types[i];
 
-    if (name == "texture_diffuse") {
-      number = std::to_string(num_diffuse++);
-    } else if (name == "texture_specular") {
-      number = std::to_string(num_specular++);
-    } else if (name == "texture_reflection") {
-      number = std::to_string(num_reflection++);
-    } else if (name == "texture_normal") {
-      number = std::to_string(num_normal++);
-    } else if (name == "texture_height") {
-      number = std::to_string(num_height++);
-    } else if (name == "texture_cubemap") {
-      number = std::to_string(num_cubemap++);
-    } else {
-      throw TextureException("Invalid texture type");
-    }
+    auto it = texture_counts.find(name);
 
-    glUniform1i(shader.get_uniform_location(name + number), static_cast<GLint>(i));
+    if (it == texture_counts.end()) {
+      glUniform1i(shader.get_uniform_location(name + "1"), static_cast<GLint>(i));
+      texture_counts[name] = 1;
+    } else {
+      glUniform1i(shader.get_uniform_location(name + std::to_string(it->second)),
+                  static_cast<GLint>(i));
+      it->second++;
+    }
 
     if (name == "texture_cubemap") {
       glBindTexture(GL_TEXTURE_CUBE_MAP, texture_ids[i]);
@@ -195,6 +191,20 @@ void Textures::append(const Textures& other)
   texture_types.insert(texture_types.end(),
                        other.texture_types.begin(),
                        other.texture_types.end());
+}
+
+void Textures::clear()
+{
+  for (auto id : texture_ids) {
+    if (external_ids.find(id) == external_ids.end()) {
+      glDeleteTextures(1, &id);
+    }
+  }
+
+  texture_ids.clear();
+  texture_paths.clear();
+  texture_types.clear();
+  external_ids.clear();
 }
 
 size_t Textures::size() const

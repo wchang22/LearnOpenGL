@@ -9,7 +9,7 @@ Object::Object() : EBO(0), num_vertices(0), num_indices(0)
   if (UBO == 0) {
     glGenBuffers(1, &UBO);
     glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-    glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(mat4), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, 3 * sizeof(mat4), nullptr, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, UBO);
   }
 
@@ -93,15 +93,15 @@ void Object::set_model_transform(std::optional<vec3> scale,
   }
 
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, sizeof (mat4), sizeof (mat4), &model[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof (mat4), sizeof (mat4), &model[0][0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void Object::set_world_space_transform(mat4 perspective, mat4 view)
 {
-  mat4 world_space = perspective * view;
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof (mat4), &world_space[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof (mat4), &perspective[0][0]);
+  glBufferSubData(GL_UNIFORM_BUFFER, sizeof (mat4), sizeof (mat4), &view[0][0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 

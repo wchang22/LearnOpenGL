@@ -17,8 +17,6 @@ FrameBuffer::FrameBuffer(int width, int height,
   auto [color_buffer_format, rb_storage_type, rb_attachment_type] =
       get_buffer_types(buffer_num_bits, buffer_type, stencil);
 
-  glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
   glGenFramebuffers(1, &FBO);
 
   color_textures.resize(num_buffers);
@@ -36,6 +34,7 @@ FrameBuffer::FrameBuffer(int width, int height,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
                            GL_TEXTURE_2D, color_textures[i], 0);
+    textures.add_texture("texture_screen", color_textures[i]);
   }
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -49,18 +48,11 @@ FrameBuffer::FrameBuffer(int width, int height,
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, rb_attachment_type, GL_RENDERBUFFER, RBO);
   }
 
-  glBindVertexArray(VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof (quadVertices), quadVertices, GL_STATIC_DRAW);
+  rect.start_setup();
+  rect.add_vertices(quadVertices, 6, sizeof (quadVertices));
+  rect.add_vertex_attribs({ 2, 2 });
+  rect.finalize_setup();
 
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof (float), reinterpret_cast<void*>(0));
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof (float),
-                        reinterpret_cast<void*>(2 * sizeof (float)));
-  glEnableVertexAttribArray(1);
-
-  glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -68,8 +60,6 @@ FrameBuffer::FrameBuffer(int width, int height,
 
 FrameBuffer::~FrameBuffer()
 {
-  glDeleteVertexArrays(1, &VAO);
-  glDeleteBuffers(1, &VBO);
   glDeleteFramebuffers(1, &FBO);
   glDeleteRenderbuffers(1, &RBO);
   glDeleteTextures(static_cast<int>(color_textures.size()), color_textures.data());
@@ -125,7 +115,6 @@ void FrameBuffer::bind_framebuffer() const
   }
 
   std::vector<unsigned int> attachments;
-  attachments.reserve(color_textures.size());
 
   for (unsigned int i = 0; i < color_textures.size(); i++) {
     attachments.emplace_back(GL_COLOR_ATTACHMENT0 + i);
@@ -142,16 +131,6 @@ void FrameBuffer::unbind_framebuffer() const
 
 void FrameBuffer::draw_scene() const
 {
-  shader.use_shader_program();
   glDisable(GL_DEPTH_TEST);
-
-  for (unsigned int i = 0; i < color_textures.size(); i++) {
-    glActiveTexture(GL_TEXTURE0 + i);
-    glUniform1i(shader.get_uniform_location("screen_texture" + std::to_string(i + 1)),
-                static_cast<int>(i));
-    glBindTexture(GL_TEXTURE_2D, color_textures[i]);
-  }
-
-  glBindVertexArray(VAO);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
+  rect.draw(shader, textures);
 }

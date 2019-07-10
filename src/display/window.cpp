@@ -16,7 +16,7 @@ Window::Window()
 
   const int width = Window::width();
   const int height = Window::height();
-  window = glfwCreateWindow(width, height, "LearnOpenGL", glfwGetPrimaryMonitor(), nullptr);
+  window = glfwCreateWindow(width, height, "LearnOpenGL", nullptr, nullptr);
 
   if (!window) {
     glfwDestroyWindow(window);

@@ -2,6 +2,8 @@
 #define FRAMEBUFFER_H
 
 #include "shader/shader.h"
+#include "model/object.h"
+#include "shader/textures.h"
 
 #include <glad/glad.h>
 #include <memory>
@@ -31,10 +33,12 @@ protected:
                                                                    GLenum buffer_type,
                                                                    bool stencil);
 
-  unsigned int VAO, VBO, RBO, FBO;
+  unsigned int RBO, FBO;
   std::vector<unsigned int> color_textures;
   int width, height;
   Shader shader;
+  Object rect;
+  Textures textures;
 };
 
 #endif // FRAMEBUFFER_H

@@ -53,6 +53,7 @@ Display::Display(std::shared_ptr<Camera> camera)
   init_shaders();
   init_buffers();
   init_textures();
+  init_lights();
 }
 
 Display::~Display() {
@@ -70,7 +71,9 @@ void Display::draw() const {
 
   point_shadow.bind_shadow_map("shadow_map", { cube_shaders, model_shaders });
 
-  set_lights();
+  glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
+  glBufferSubData(GL_UNIFORM_BUFFER, 9 * sizeof (vec4), sizeof (vec3), &camera->get_position()[0]);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
   blur.bind_framebuffer();
 
@@ -80,9 +83,7 @@ void Display::draw() const {
   draw_lights(*light_shaders);
   draw_skybox();
 
-  blur.unbind_framebuffer();
-  blur.blur();
-  blur.draw_scene();
+  blur.blur_scene();
 }
 
 void Display::generate_cube_vertices(float in[192], float out[504])
@@ -214,7 +215,7 @@ void Display::init_shaders() {
                                                  "../../shaders/shadow/point_depth.geom");
 }
 
-void Display::set_lights() const
+void Display::init_lights() const
 {
   glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
 

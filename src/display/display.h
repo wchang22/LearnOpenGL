@@ -33,7 +33,7 @@ private:
   void init_buffers();
   void init_textures();
   void init_shaders();
-  void set_lights() const;
+  void init_lights() const;
   void draw_cubes(const Shader& shader) const;
   void draw_lights(const Shader& shader) const;
   void draw_box(const Shader& shader) const;

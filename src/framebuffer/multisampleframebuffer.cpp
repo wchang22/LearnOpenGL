@@ -63,7 +63,6 @@ void MultiSampleFrameBuffer::bind_framebuffer() const
   }
 
   std::vector<unsigned int> attachments;
-  attachments.reserve(multi_color_textures.size());
 
   for (unsigned int i = 0; i < multi_color_textures.size(); i++) {
     attachments.emplace_back(GL_COLOR_ATTACHMENT0 + i);
