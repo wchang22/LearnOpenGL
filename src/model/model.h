@@ -16,11 +16,7 @@ class Model
 public:
   Model(const char* path);
 
-  void add_instanced_array(void* array, size_t array_element_size, unsigned int amount,
-                           unsigned int vertex_attrib_pointer);
-
-  void draw(const Shader& shader) const;
-  void draw_instanced(const Shader& shader, unsigned int num_times) const;
+  void draw(const Shader& shader, const std::vector<std::string_view> flags = {}) const;
 
   std::vector<Mesh> meshes;
 

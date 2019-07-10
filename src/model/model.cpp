@@ -1,5 +1,6 @@
 #include "model.h"
 #include "util/exception.h"
+#include "model/object.h"
 
 #include <utility>
 
@@ -11,16 +12,11 @@ Model::Model(const char* path)
   load_model(path);
 }
 
-void Model::draw(const Shader& shader) const
-{
-  draw_instanced(shader, 1);
-}
-
-void Model::draw_instanced(const Shader& shader, unsigned int num_times) const
+void Model::draw(const Shader& shader, const std::vector<std::string_view> flags) const
 {
   glEnable(GL_CULL_FACE);
   for (const Mesh& mesh : meshes) {
-    mesh.draw_instanced(shader, num_times);
+    mesh.draw(shader, flags);
   }
   glDisable(GL_CULL_FACE);
 }
@@ -115,42 +111,4 @@ Textures Model::load_material_textures(aiMaterial* material, aiTextureType type,
   }
 
   return textures;
-}
-
-void Model::add_instanced_array(void* array, size_t array_element_size, unsigned int amount,
-                                unsigned int vertex_attrib_pointer)
-{
-  unsigned int VBO;
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, amount * static_cast<long>(array_element_size),
-               array, GL_STATIC_DRAW);
-
-  size_t data_size;
-  unsigned int data_multiple;
-
-  if (array_element_size <= sizeof(vec4)) {
-    data_size = array_element_size;
-    data_multiple = 1;
-  } else {
-    int num_floats = static_cast<int>(array_element_size / sizeof (float));
-
-    if (num_floats % 4 == 0) {
-      data_size = sizeof (vec4);
-      data_multiple = static_cast<unsigned int>(num_floats / 4);
-    } else if (num_floats % 3 == 0) {
-      data_size = sizeof (vec3);
-      data_multiple = static_cast<unsigned int>(num_floats / 3);
-    } else {
-      data_size = array_element_size;
-      data_multiple = 1;
-    }
-  }
-
-  for (Mesh& mesh : meshes) {
-    mesh.add_instanced_data(vertex_attrib_pointer, data_size, data_multiple);
-  }
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glDeleteBuffers(1, &VBO);
 }

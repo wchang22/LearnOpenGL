@@ -9,7 +9,6 @@
 #include <assimp/scene.h>
 #include <algorithm>
 
-
 constexpr vec3 dir_light_dir = vec3(2.0f, -4.0f, 1.0f);
 constexpr vec3 point_light_pos = vec3(0.0f, 3.0f, 2.0f);
 
@@ -36,8 +35,8 @@ constexpr DirLight dir_light {
 
 constexpr PointLight point_light {
   vec3(0.05f),
-  vec3(10.0f),
   vec3(5.0f),
+  vec3(3.0f),
   vec3(1.0f, 0.045f, 0.016f),
 };
 
@@ -45,9 +44,9 @@ Display::Display(std::shared_ptr<Camera> camera)
   : camera(camera),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj"),
     point_shadow(1024, 1024, Window::width(), Window::height(), point_light_pos),
-    fb(Window::width(), Window::height(),
-       "../../shaders/processing/blur.vert", "../../shaders/processing/blur.frag",
-       "../../shaders/processing/fb.vert", "../../shaders/processing/fb.frag")
+    blur(Window::width(), Window::height(),
+         "../../shaders/processing/blur.vert", "../../shaders/processing/blur.frag",
+         "../../shaders/processing/fb.vert", "../../shaders/processing/fb.frag")
 {
   srand(static_cast<unsigned int>(time(nullptr)));
 
@@ -57,26 +56,11 @@ Display::Display(std::shared_ptr<Camera> camera)
 }
 
 Display::~Display() {
-  glDeleteBuffers(1, &planeVBO);
-  glDeleteBuffers(1, &cubeVBO);
-  glDeleteBuffers(1, &skyboxVBO);
-  glDeleteBuffers(1, &UBO);
   glDeleteBuffers(1, &lightsUBO);
-  glDeleteVertexArrays(1, &planeVAO);
-  glDeleteVertexArrays(1, &cubeVAO);
-  glDeleteVertexArrays(1, &skyboxVAO);
 }
 
 void Display::draw() const {
-  mat4 view = camera->lookat();
-  mat4 perspective = camera->perspective();
-  mat4 world_space = perspective * view;
-  mat4 model(1.0f);
-
-  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), &world_space[0][0]);
-  glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), &model[0][0]);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  Object::set_world_space_transform(camera->perspective(), camera->lookat());
 
   point_shadow.bind_depth_map();
 
@@ -84,20 +68,21 @@ void Display::draw() const {
   draw_cubes(*point_depth_shaders);
   draw_box(*point_depth_shaders);
 
-  point_shadow.bind_shadow_map("shadow_map", { shaders, model_shaders });
+  point_shadow.bind_shadow_map("shadow_map", { cube_shaders, model_shaders });
+
   set_lights();
 
-  fb.bind_framebuffer();
+  blur.bind_framebuffer();
 
-  draw_cubes(*shaders);
-  draw_box(*shaders);
+  draw_cubes(*cube_shaders);
+  draw_box(*cube_shaders);
   draw_model(*model_shaders);
   draw_lights(*light_shaders);
   draw_skybox();
 
-  fb.unbind_framebuffer();
-  fb.blur();
-  fb.draw_scene();
+  blur.unbind_framebuffer();
+  blur.blur();
+  blur.draw_scene();
 }
 
 void Display::generate_cube_vertices(float in[192], float out[504])
@@ -177,83 +162,31 @@ void Display::generate_cube_vertices(float in[192], float out[504])
 }
 
 void Display::init_buffers() {
-  glGenVertexArrays(1, &planeVAO);
-  glGenBuffers(1, &planeVBO);
-
-  glBindVertexArray(planeVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof (float), buffer_offset(0));
-  glEnableVertexAttribArray(0);
-
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof (float), buffer_offset(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof (float), buffer_offset(6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
-
-
   float processed_vertices[504];
   generate_cube_vertices(cubeVertices, processed_vertices);
 
-  glGenVertexArrays(1, &cubeVAO);
-  glGenBuffers(1, &cubeVBO);
+  cube.start_setup();
+  cube.add_vertices(processed_vertices, 36, sizeof (processed_vertices));
+  cube.add_vertex_attribs({ 3, 3, 2, 3, 3 });
+  cube.finalize_setup();
 
-  glBindVertexArray(cubeVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(processed_vertices), processed_vertices, GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof (float), buffer_offset(0));
-  glEnableVertexAttribArray(0);
-
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 14 * sizeof (float), buffer_offset(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 14 * sizeof (float), buffer_offset(6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
-
-  glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof (float), buffer_offset(8 * sizeof(float)));
-  glEnableVertexAttribArray(3);
-
-  glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof (float), buffer_offset(11 * sizeof(float)));
-  glEnableVertexAttribArray(4);
-
-
-  glGenVertexArrays(1, &skyboxVAO);
-  glGenBuffers(1, &skyboxVBO);
-
-  glBindVertexArray(skyboxVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof (float), buffer_offset(0));
-  glEnableVertexAttribArray(0);
-
+  skybox.start_setup();
+  skybox.add_vertices(skyboxVertices, 36, sizeof (skyboxVertices));
+  skybox.add_vertex_attribs({ 3 });
+  skybox.finalize_setup();
 
   glGenBuffers(1, &lightsUBO);
   glBindBuffer(GL_UNIFORM_BUFFER, lightsUBO);
   glBufferData(GL_UNIFORM_BUFFER, 10 * sizeof(vec4), nullptr, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_UNIFORM_BUFFER, 1, lightsUBO);
 
-
-  glGenBuffers(1, &UBO);
-  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-  glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(mat4), nullptr, GL_DYNAMIC_DRAW);
-  glBindBufferBase(GL_UNIFORM_BUFFER, 0, UBO);
-
-
-  glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void Display::init_textures() {
-  textures.load_texture_from_image("../../assets/bricks2.jpg", "texture_diffuse");
-  textures.load_texture_from_image("../../assets/bricks2_normal.jpg", "texture_normal");
-  textures.load_texture_from_image("../../assets/bricks2_disp.jpg", "texture_height");
+  cube_textures.load_texture_from_image("../../assets/bricks2.jpg", "texture_diffuse");
+  cube_textures.load_texture_from_image("../../assets/bricks2_normal.jpg", "texture_normal");
+  cube_textures.load_texture_from_image("../../assets/bricks2_disp.jpg", "texture_height");
   toybox_textures.load_texture_from_image("../../assets/wood.png", "texture_diffuse");
   toybox_textures.load_texture_from_image("../../assets/toy_box_normal.png", "texture_normal");
   toybox_textures.load_texture_from_image("../../assets/toy_box_disp.png", "texture_height");
@@ -268,7 +201,7 @@ void Display::init_textures() {
 }
 
 void Display::init_shaders() {
-  shaders = std::make_unique<Shader>("../../shaders/object/cube.vert",
+  cube_shaders = std::make_unique<Shader>("../../shaders/object/cube.vert",
                                      "../../shaders/object/cube.frag");
   light_shaders = std::make_unique<Shader>("../../shaders/object/light.vert",
                                            "../../shaders/object/light.frag");
@@ -306,107 +239,46 @@ void Display::set_lights() const
 
 void Display::draw_cubes(const Shader& shader) const
 {
-  shader.use_shader_program();
+  constexpr vec3 positions[] = {
+    vec3(0.0f, -2.0f, 0.0f),
+    vec3(2.0f, 4.0f, 2.0f),
+    vec3(-1.0f, 0.0f, -1.0f),
+    vec3(2.0f, 0.0f, 0.0f)
+  };
 
-  glBindVertexArray(cubeVAO);
-  toybox_textures.use_textures(shader);
-  mat4 model(1.0f);
-
-  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-
-  model = glm::translate(model, vec3(0.0f, -2.0f, 0.0f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
-  glDrawArrays(GL_TRIANGLES, 0, 36);
-
-  model = glm::translate(mat4(1.0f), vec3(2.0f, 4.0f, 2.0f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
-  glDrawArrays(GL_TRIANGLES, 0, 36);
-
-  model = glm::translate(mat4(1.0f), vec3(-1.0f, 0.0f, -1.0f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
-  glDrawArrays(GL_TRIANGLES, 0, 36);
-
-  model = glm::translate(mat4(1.0f), vec3(2.0f, 0.0f, 0.0f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
-  glDrawArrays(GL_TRIANGLES, 0, 36);
-
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  for (const auto& position : positions) {
+    Object::set_model_transform({}, {}, position);
+    cube.draw(shader, toybox_textures);
+  }
 }
 
 void Display::draw_lights(const Shader& shader) const
 {
-  shader.use_shader_program();
-
-  glBindVertexArray(cubeVAO);
-  mat4 model(1.0f);
-
-  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-
-  model = glm::translate(model, point_light_pos);
-  model = glm::scale(model, vec3(0.2f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
-  glDrawArrays(GL_TRIANGLES, 0, 36);
-
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  Object::set_model_transform(vec3(0.2f), {}, point_light_pos);
+  cube.draw(shader);
 }
 
 void Display::draw_box(const Shader& shader) const
 {
-  shader.use_shader_program();
-  glUniform1i(shader.get_uniform_location("reverse_normal"), 1);
-
-  glBindVertexArray(cubeVAO);
-  textures.use_textures(shader);
-  mat4 model(1.0f);
-
-  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-
-  model = glm::scale(model, vec3(10.0f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
-  glDrawArrays(GL_TRIANGLES, 0, 36);
-
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
-  glUniform1i(shader.get_uniform_location("reverse_normal"), 0);
+  Object::set_model_transform(vec3(10.0f), {}, {});
+  cube.draw(shader, cube_textures, { "reverse_normal" });
 }
 
 void Display::draw_model(const Shader& shader) const
 {
-  shader.use_shader_program();
-
-  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-
-  glUniform1i(shader.get_uniform_location("gamma"), 1);
-  mat4 model = glm::scale(mat4(1.0f), vec3(0.2f, 0.2, 0.2f));
-  model = glm::rotate(model, -static_cast<float>(glfwGetTime()), vec3(0, 1, 0));
-  model = glm::translate(model, vec3(0.0f, -2.5f, 0.0f));
-  glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof (mat4), sizeof (mat4), &model[0][0]);
-  model_nanosuit.draw(shader);
-  glUniform1i(shader.get_uniform_location("gamma"), 0);
-
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  Object::set_model_transform(vec3(0.2f),
+                              std::make_pair(-static_cast<float>(glfwGetTime()),
+                                             vec3(0.0f, 1.0f, 0.0f)),
+                              vec3(0.0f, -0.5f, 0.0f));
+  model_nanosuit.draw(shader, { "gamma" });
 }
 
 void Display::draw_skybox() const
 {
   glDepthFunc(GL_LEQUAL);
 
-  mat4 view = mat4(mat3(camera->lookat()));
-  mat4 perspective = camera->perspective();
-  mat4 world_space = perspective * view;
-
-  skybox_shaders->use_shader_program();
-  skybox_textures.use_textures(*skybox_shaders);
-
-  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), &world_space[0][0]);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-  glBindVertexArray(skyboxVAO);
-  glDrawArrays(GL_TRIANGLES, 0, 36);
+  Object::set_world_space_transform(camera->perspective(), mat4(mat3(camera->lookat())));
+  skybox.draw(*skybox_shaders, skybox_textures);
 
   glDepthFunc(GL_LESS);
-}
-
-void* Display::buffer_offset(int offset) {
-  return reinterpret_cast<void*>(offset);
 }

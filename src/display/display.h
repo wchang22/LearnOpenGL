@@ -9,6 +9,7 @@
 #include "shader/shader.h"
 #include "shader/textures.h"
 #include "model/model.h"
+#include "model/object.h"
 #include "shadow/directional_shadow.h"
 #include "shadow/point_shadow.h"
 #include "framebuffer/gaussianblur.h"
@@ -26,11 +27,8 @@ public:
   void draw() const;
 
 private:
-  unsigned int cubeVAO, cubeVBO, planeVAO, planeVBO;
-  unsigned int skyboxVAO, skyboxVBO;
-  unsigned int UBO, lightsUBO;
+  unsigned int lightsUBO;
 
-  static void* buffer_offset(int offset);
   void generate_cube_vertices(float in[192], float out[504]);
   void init_buffers();
   void init_textures();
@@ -42,18 +40,23 @@ private:
   void draw_model(const Shader& shader) const;
   void draw_skybox() const;
 
-  std::shared_ptr<Shader> shaders;
+  std::shared_ptr<Shader> cube_shaders;
   std::shared_ptr<Shader> skybox_shaders;
   std::shared_ptr<Shader> model_shaders;
   std::shared_ptr<Shader> point_depth_shaders;
   std::shared_ptr<Shader> light_shaders;
   std::shared_ptr<Camera> camera;
-  Textures textures;
+
+  Textures cube_textures;
   Textures toybox_textures;
   Textures skybox_textures;
+
+  Object skybox;
+  Object cube;
+
   Model model_nanosuit;
   PointShadow point_shadow;
-  GaussianBlur fb;
+  GaussianBlur blur;
 };
 
 #endif // DISPLAY_H

@@ -8,6 +8,7 @@
 
 #include "shader/shader.h"
 #include "shader/textures.h"
+#include "model/object.h"
 
 typedef glm::vec4 vec4;
 typedef glm::vec3 vec3;
@@ -25,20 +26,12 @@ public:
 
   Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned int>&& indices, Textures&& textures);
   Mesh(Mesh&& other) noexcept;
-  ~Mesh();
 
-  void add_instanced_data(unsigned int vertex_attrib_pointer, size_t data_size,
-                          unsigned int data_multiple);
-  void draw_instanced(const Shader& shader, unsigned int num_times) const;
-
-  std::vector<Vertex> vertices;
-  std::vector<unsigned int> indices;
-  Textures textures;
+  void draw(const Shader& shader, const std::vector<std::string_view> flags = {}) const;
 
 private:
-  void setup_mesh();
-
-  unsigned int VAO, VBO, EBO;
+  Textures textures;
+  Object mesh;
 };
 
 static_assert (std::is_nothrow_move_constructible<Mesh>::value, "Mesh not move constructible");
