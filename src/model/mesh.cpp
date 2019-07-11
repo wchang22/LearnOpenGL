@@ -1,10 +1,6 @@
 #include "mesh.h"
 #include "util/exception.h"
 
-#include <utility>
-
-#include <glad/glad.h>
-
 Mesh::Mesh(std::vector<Vertex>&& vertices,
            std::vector<unsigned int>&& indices,
            Textures&& textures)

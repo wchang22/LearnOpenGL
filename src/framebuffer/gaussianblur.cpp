@@ -1,5 +1,4 @@
 #include "gaussianblur.h"
-#include <iostream>
 
 GaussianBlur::GaussianBlur(int width, int height,
                            const char* blur_vertex_path, const char* blur_frag_path,

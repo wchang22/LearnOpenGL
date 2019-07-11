@@ -10,7 +10,6 @@
 #include "shader/textures.h"
 #include "model/object.h"
 
-typedef glm::vec4 vec4;
 typedef glm::vec3 vec3;
 typedef glm::vec2 vec2;
 

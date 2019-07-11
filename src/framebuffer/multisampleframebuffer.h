@@ -1,12 +1,9 @@
 #ifndef MULTISAMPLEFRAMEBUFFER_H
 #define MULTISAMPLEFRAMEBUFFER_H
 
-#include "shader/shader.h"
 #include "framebuffer/framebuffer.h"
 
 #include <glad/glad.h>
-#include <memory>
-#include <tuple>
 #include <vector>
 
 class MultiSampleFrameBuffer : public FrameBuffer

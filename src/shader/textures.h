@@ -2,7 +2,6 @@
 #define TEXTURES_H
 
 #include <vector>
-#include <string>
 #include <unordered_set>
 
 #include "shader/shader.h"

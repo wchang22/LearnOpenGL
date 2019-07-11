@@ -35,10 +35,9 @@ layout (std140, binding = 0) uniform Matrices {
 };
 
 layout (std140, binding = 1) uniform Lights {
-    DirLight dir_light;
-    PointLight point_light;
     vec3 view_position;
-    float material_shininess;
+    DirLight dir_light[5];
+    PointLight point_light[5];
 };
 
 uniform bool reverse_normal;
@@ -53,7 +52,7 @@ void main() {
     vec3 n = normalize(normal_mat * in_normal) * (reverse_normal ? -1 : 1);
 
     mat3 tbn = transpose(mat3(t, b, n));
-    vs_out.tangent_light_pos = tbn * point_light.position;
+    vs_out.tangent_light_pos = tbn * point_light[0].position;
     vs_out.tangent_view_pos = tbn * view_position;
     vs_out.tangent_frag_pos = tbn * vs_out.position;
 

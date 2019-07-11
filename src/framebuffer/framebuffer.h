@@ -6,7 +6,6 @@
 #include "shader/textures.h"
 
 #include <glad/glad.h>
-#include <memory>
 #include <tuple>
 #include <vector>
 

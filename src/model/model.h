@@ -1,8 +1,6 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <string>
-
 #include <assimp/scene.h>
 
 #include "shader/shader.h"

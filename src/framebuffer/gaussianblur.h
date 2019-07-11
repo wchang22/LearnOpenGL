@@ -1,7 +1,7 @@
 #ifndef GAUSSIANBLUR_H
 #define GAUSSIANBLUR_H
 
-#include "framebuffer/multisampleframebuffer.h"
+#include "framebuffer/framebuffer.h"
 
 class GaussianBlur
 {

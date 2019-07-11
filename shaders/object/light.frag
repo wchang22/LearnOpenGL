@@ -16,10 +16,9 @@ struct PointLight {
 };
 
 layout (std140, binding = 1) uniform Lights {
-    DirLight dir_light;
-    PointLight point_light;
     vec3 view_position;
-    float material_shininess;
+    DirLight dir_light[5];
+    PointLight point_light[5];
 };
 
 layout (location = 0) out vec4 frag_color;
@@ -34,7 +33,7 @@ vec3 filter_bright_colors(vec3 color) {
 }
 
 void main() {
-    vec3 color = point_light.ambient + point_light.diffuse + point_light.specular;
+    vec3 color = point_light[0].ambient + point_light[0].diffuse + point_light[0].specular;
     frag_color = vec4(color, 1.0);
     bright_color = vec4(filter_bright_colors(color), 1.0);
 }

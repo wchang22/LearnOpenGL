@@ -8,7 +8,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <vector>
-#include <memory>
 #include <optional>
 
 typedef glm::vec3 vec3;
@@ -28,8 +27,8 @@ public:
   void finalize_setup();
 
   static void set_model_transform(std::optional<vec3> scale,
-                           std::optional<std::pair<float, vec3>> rotate,
-                           std::optional<vec3> translate);
+                                  std::optional<std::pair<float, vec3>> rotate,
+                                  std::optional<vec3> translate);
   static void set_world_space_transform(mat4 perspective, mat4 view);
 
   void draw(const Shader& shader, const Textures& textures,

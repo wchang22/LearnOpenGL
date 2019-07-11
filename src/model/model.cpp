@@ -1,8 +1,5 @@
 #include "model.h"
 #include "util/exception.h"
-#include "model/object.h"
-
-#include <utility>
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
