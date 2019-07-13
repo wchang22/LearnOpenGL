@@ -71,10 +71,6 @@ void Camera::update_direction(float delta_x, float delta_y) {
   forward = glm::normalize(forward);
 }
 
-void Camera::update_fov(float delta_y) {
-  fovy = std::clamp(fovy - delta_y, 1.0f, 45.0f);
-}
-
 vec3 Camera::get_position() const {
   return position;
 }

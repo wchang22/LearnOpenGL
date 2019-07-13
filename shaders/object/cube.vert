@@ -48,8 +48,8 @@ void main() {
 
     mat3 normal_mat = transpose(inverse(mat3(model)));
     vec3 t = normalize(normal_mat * in_tangent);
-    vec3 b = normalize(normal_mat * in_bitangent);
     vec3 n = normalize(normal_mat * in_normal) * (reverse_normal ? -1 : 1);
+    vec3 b = normalize(normal_mat * in_bitangent);
 
     mat3 tbn = transpose(mat3(t, b, n));
     vs_out.tangent_light_pos = tbn * point_light[0].position;

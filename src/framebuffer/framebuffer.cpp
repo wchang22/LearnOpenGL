@@ -5,29 +5,29 @@
 FrameBuffer::FrameBuffer(int width, int height,
                          const char* vertex_path,
                          const char* frag_path,
-                         unsigned int num_buffers,
-                         int buffer_num_bits,
-                         GLenum buffer_type,
+                         const std::vector<GLenum>& buffer_formats,
                          bool renderbuffer,
                          bool stencil)
   : width(width),
     height(height),
     shader(vertex_path, frag_path)
 {
-  auto [color_buffer_format, rb_storage_type, rb_attachment_type] =
-      get_buffer_types(buffer_num_bits, buffer_type, stencil);
+  unsigned int rb_storage_type = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT;
+  unsigned int rb_attachment_type = stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
 
   glGenFramebuffers(1, &FBO);
 
-  color_textures.resize(num_buffers);
-  glGenTextures(static_cast<int>(num_buffers), color_textures.data());
+  color_textures.resize(buffer_formats.size());
+  glGenTextures(static_cast<int>(buffer_formats.size()), color_textures.data());
 
   glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-  for (unsigned int i = 0; i < num_buffers; i++) {
+  for (unsigned int i = 0; i < buffer_formats.size(); i++) {
+    const auto [pixel_format, pixel_type] = get_pixel_format_type(buffer_formats[i]);
+
     glBindTexture(GL_TEXTURE_2D, color_textures[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, static_cast<int>(color_buffer_format),
-                 width, height, 0, GL_RGBA, buffer_type, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, static_cast<int>(buffer_formats[i]),
+                 width, height, 0, pixel_format, pixel_type, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -49,7 +49,7 @@ FrameBuffer::FrameBuffer(int width, int height,
   }
 
   rect.start_setup();
-  rect.add_vertices(quadVertices, 6, sizeof (quadVertices));
+  rect.add_vertices(QUAD_VERTICES, 6, sizeof (QUAD_VERTICES));
   rect.add_vertex_attribs({ 2, 2 });
   rect.finalize_setup();
 
@@ -65,43 +65,24 @@ FrameBuffer::~FrameBuffer()
   glDeleteTextures(static_cast<int>(color_textures.size()), color_textures.data());
 }
 
-std::tuple<unsigned, unsigned, unsigned> FrameBuffer::get_buffer_types(int buffer_num_bits,
-                                                                       GLenum buffer_type,
-                                                                       bool stencil)
+std::tuple<GLenum, GLenum> FrameBuffer::get_pixel_format_type(GLenum buffer_format)
 {
-  unsigned int color_buffer_format;
-  unsigned int rb_storage_type = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT;
-  unsigned int rb_attachment_type = stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
-
-  if (buffer_type == GL_UNSIGNED_BYTE) {
-    switch (buffer_num_bits) {
-      case 8:
-        color_buffer_format = GL_RGBA;
-        break;
-      case 16:
-        color_buffer_format = GL_RGBA16;
-        break;
-      default:
-        throw FrameBufferException("Invalid framebuffer size (bits) for byte type: " +
-                                   std::to_string(buffer_num_bits));
-    }
-  } else if (buffer_type == GL_FLOAT) {
-    switch (buffer_num_bits) {
-      case 16:
-        color_buffer_format = GL_RGBA16F;
-        break;
-      case 32:
-        color_buffer_format = GL_RGBA32F;
-        break;
-      default:
-        throw FrameBufferException("Invalid framebuffer size (bits) for float type: " +
-                                   std::to_string(buffer_num_bits));
-    }
-  } else {
-    throw FrameBufferException("Invalid framebuffer type");
+  switch (buffer_format) {
+    case GL_RGBA:
+    case GL_RGBA16:
+      return std::make_tuple(GL_RGBA, GL_UNSIGNED_BYTE);
+    case GL_RGBA16F:
+    case GL_RGBA32F:
+      return std::make_tuple(GL_RGBA, GL_FLOAT);
+    case GL_RGB:
+    case GL_RGB16:
+      return std::make_tuple(GL_RGB, GL_UNSIGNED_BYTE);
+    case GL_RGB16F:
+    case GL_RGB32F:
+      return std::make_tuple(GL_RGB, GL_FLOAT);
+    default:
+      throw FrameBufferException("Unknown framebuffer type: " + std::to_string(buffer_format));
   }
-
-  return std::make_tuple(color_buffer_format, rb_storage_type, rb_attachment_type);
 }
 
 void FrameBuffer::bind_framebuffer() const
@@ -132,5 +113,6 @@ void FrameBuffer::unbind_framebuffer() const
 void FrameBuffer::draw_scene() const
 {
   glDisable(GL_DEPTH_TEST);
+  unbind_framebuffer();
   rect.draw(shader, textures);
 }

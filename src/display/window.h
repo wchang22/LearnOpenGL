@@ -23,7 +23,6 @@ public:
 
 private:
   static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-  static void scroll_callback(GLFWwindow* window, double delta_x, double delta_y);
   void key_callback();
   void mouse_callback();
   static void cycle_fill_mode();

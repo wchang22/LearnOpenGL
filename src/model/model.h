@@ -14,7 +14,7 @@ class Model
 public:
   Model(const char* path);
 
-  void draw(const Shader& shader, const std::vector<std::string_view> flags = {}) const;
+  void draw(const Shader& shader, std::initializer_list<std::string_view> flags = {}) const;
 
   std::vector<Mesh> meshes;
 

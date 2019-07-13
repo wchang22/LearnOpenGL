@@ -21,12 +21,13 @@ public:
     vec3 normal;
     vec2 texture_coords;
     vec3 tangent;
+    vec3 bitangent;
   };
 
   Mesh(std::vector<Vertex>&& vertices, std::vector<unsigned int>&& indices, Textures&& textures);
   Mesh(Mesh&& other) noexcept;
 
-  void draw(const Shader& shader, const std::vector<std::string_view> flags = {}) const;
+  void draw(const Shader& shader, std::initializer_list<std::string_view> flags = {}) const;
 
 private:
   Textures textures;

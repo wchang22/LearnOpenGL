@@ -6,12 +6,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-constexpr vec3 point_light_pos = vec3(0.0f, 3.0f, 2.0f);
+constexpr vec3 POINT_LIGHT_POS = vec3(0.0f, 3.0f, 2.0f);
 
 Display::Display(std::shared_ptr<Camera> camera)
   : camera(camera),
     model_nanosuit("../../assets/nanosuit_reflection/nanosuit.obj"),
-    point_shadow(1024, 1024, Window::width(), Window::height(), point_light_pos),
+    point_shadow(1024, 1024, Window::width(), Window::height(), POINT_LIGHT_POS),
     blur(Window::width(), Window::height(),
          "../../shaders/processing/blur.vert", "../../shaders/processing/blur.frag",
          "../../shaders/processing/fb.vert", "../../shaders/processing/fb.frag"),
@@ -43,14 +43,14 @@ void Display::draw() const {
   draw_box(*cube_shaders);
   draw_model(*model_shaders);
   draw_lights(*light_shaders);
-  draw_skybox();
+  draw_skybox(*skybox_shaders);
 
   blur.blur_scene();
 }
 
 void Display::init_buffers() {
   float processed_vertices[504];
-  generate_cube_vertices(cubeVertices, processed_vertices);
+  generate_cube_vertices(CUBE_VERTICES, processed_vertices);
 
   cube.start_setup();
   cube.add_vertices(processed_vertices, 36, sizeof (processed_vertices));
@@ -58,12 +58,12 @@ void Display::init_buffers() {
   cube.finalize_setup();
 
   skybox.start_setup();
-  skybox.add_vertices(skyboxVertices, 36, sizeof (skyboxVertices));
+  skybox.add_vertices(SKYBOX_VERTICES, 36, sizeof (SKYBOX_VERTICES));
   skybox.add_vertex_attribs({ 3 });
   skybox.finalize_setup();
 
   lights.add_point_light({
-     point_light_pos,
+     POINT_LIGHT_POS,
      vec3(0.05f),
      vec3(5.0f),
      vec3(3.0f),
@@ -125,7 +125,7 @@ void Display::draw_lights(const Shader& shader) const
 
 void Display::draw_box(const Shader& shader) const
 {
-  Object::set_model_transform(vec3(10.0f), {}, {});
+  Object::set_model_transform(vec3(15.0f), {}, {});
   cube.draw(shader, cube_textures, { "reverse_normal" });
 }
 
@@ -138,12 +138,12 @@ void Display::draw_model(const Shader& shader) const
   model_nanosuit.draw(shader, { "gamma" });
 }
 
-void Display::draw_skybox() const
+void Display::draw_skybox(const Shader& shader) const
 {
   glDepthFunc(GL_LEQUAL);
 
   Object::set_world_space_transform(camera->perspective(), mat4(mat3(camera->lookat())));
-  skybox.draw(*skybox_shaders, skybox_textures);
+  skybox.draw(shader, skybox_textures);
 
   glDepthFunc(GL_LESS);
 }

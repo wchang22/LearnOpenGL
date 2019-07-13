@@ -13,6 +13,7 @@
 #include "model/lights.h"
 #include "shadow/point_shadow.h"
 #include "framebuffer/gaussianblur.h"
+#include "framebuffer/multisampleframebuffer.h"
 
 typedef glm::vec3 vec3;
 typedef glm::mat3 mat3;
@@ -31,7 +32,7 @@ private:
   void draw_lights(const Shader& shader) const;
   void draw_box(const Shader& shader) const;
   void draw_model(const Shader& shader) const;
-  void draw_skybox() const;
+  void draw_skybox(const Shader& shader) const;
 
   std::shared_ptr<Shader> cube_shaders;
   std::shared_ptr<Shader> skybox_shaders;

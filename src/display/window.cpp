@@ -4,7 +4,6 @@
 #include "util/profiling/profiling.h"
 
 constexpr float MOUSE_SENSITIVITY = 0.05f;
-static float delta_fovy = 0.0f;
 
 Window::Window()
 {
@@ -12,11 +11,11 @@ Window::Window()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_SAMPLES, num_aa_samples);
+  glfwWindowHint(GLFW_SAMPLES, NUM_AA_SAMPLES);
 
   const int width = Window::width();
   const int height = Window::height();
-  window = glfwCreateWindow(width, height, "LearnOpenGL", nullptr, nullptr);
+  window = glfwCreateWindow(width, height, "LearnOpenGL", glfwGetPrimaryMonitor(), nullptr);
 
   if (!window) {
     glfwDestroyWindow(window);
@@ -34,7 +33,6 @@ Window::Window()
 
   glViewport(0, 0, width, height);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-  glfwSetScrollCallback(window, scroll_callback);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   camera = std::make_shared<Camera>(vec3(0.0f, 2.0f, 4.0f),
@@ -68,8 +66,6 @@ void Window::main_loop() {
 
       TIME_SCOPE_SECTION_START("Update Camera")
       camera->update_frames();
-      camera->update_fov(delta_fovy);
-      delta_fovy = 0.0f;
       TIME_SCOPE_SECTION_END()
 
       TIME_SCOPE_SECTION_START("Draw display")
@@ -105,13 +101,6 @@ int Window::height()
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
   (void) window;
   glViewport(0, 0, width, height);
-}
-
-void Window::scroll_callback(GLFWwindow* window, double delta_x, double delta_y) {
-  (void) window;
-  (void) delta_x;
-
-  delta_fovy = static_cast<float>(delta_y);
 }
 
 void Window::key_callback() {

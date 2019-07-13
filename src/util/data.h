@@ -11,9 +11,9 @@ typedef glm::mat2 mat2;
 typedef glm::mat4 mat4;
 typedef glm::mat3x2 mat3x2;
 
-constexpr int num_aa_samples = 8;
+constexpr int NUM_AA_SAMPLES = 8;
 
-inline void generate_cube_vertices(float in[192], float out[504])
+inline void generate_cube_vertices(const float in[192], float out[504])
 {
   for (unsigned int quad = 0; quad < 6; quad++) {
     unsigned int in_quad_offset = quad * 4 * 8;
@@ -89,7 +89,7 @@ inline void generate_cube_vertices(float in[192], float out[504])
   }
 }
 
-static float cubeVertices[] = {
+constexpr float CUBE_VERTICES[] = {
   -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
    0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
    0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
@@ -121,7 +121,7 @@ static float cubeVertices[] = {
   -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
 };
 
-static unsigned int cubeIndices[] = {
+constexpr unsigned int CUBE_INDICES[] = {
   0, 1, 2, 2, 3, 0,
   4, 5, 6, 6, 7, 4,
   8, 9, 10, 10, 11, 8,
@@ -130,18 +130,7 @@ static unsigned int cubeIndices[] = {
   20, 21, 22, 22, 23, 20,
 };
 
-static float planeVertices[] = {
-    // positions          // normals        // texture Coords
-     5.0f, -0.5f,  5.0f,  0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
-    -5.0f, -0.5f,  5.0f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-    -5.0f, -0.5f, -5.0f,  0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
-
-     5.0f, -0.5f,  5.0f,  0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
-    -5.0f, -0.5f, -5.0f,  0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
-     5.0f, -0.5f, -5.0f,  0.0f, 1.0f, 0.0f, 2.0f, 2.0f
-};
-
-static float skyboxVertices[] = {
+constexpr float SKYBOX_VERTICES[] = {
   // positions
   -1.0f,  1.0f, -1.0f,
   -1.0f, -1.0f, -1.0f,
@@ -186,7 +175,7 @@ static float skyboxVertices[] = {
    1.0f, -1.0f,  1.0f
 };
 
-static float quadVertices[] = {
+constexpr float QUAD_VERTICES[] = {
   -1.0f,  1.0f,  0.0f, 1.0f,
   -1.0f, -1.0f,  0.0f, 0.0f,
    1.0f, -1.0f,  1.0f, 0.0f,

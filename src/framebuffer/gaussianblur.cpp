@@ -3,8 +3,8 @@
 GaussianBlur::GaussianBlur(int width, int height,
                            const char* blur_vertex_path, const char* blur_frag_path,
                            const char* fb_vertex_path, const char* fb_frag_path)
-  : hdr_buffer(width, height, fb_vertex_path, fb_frag_path, 2, 16, GL_FLOAT, true, false),
-    blur_buffer(width, height, blur_vertex_path, blur_frag_path, 1, 16, GL_FLOAT, false, false)
+  : hdr_buffer(width, height, fb_vertex_path, fb_frag_path, { GL_RGBA16F, GL_RGBA16F }, true, false),
+    blur_buffer(width, height, blur_vertex_path, blur_frag_path, { GL_RGBA16F }, false, false)
 {
 }
 

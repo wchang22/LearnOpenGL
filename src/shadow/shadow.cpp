@@ -26,7 +26,7 @@ void Shadow::bind_depth_map() const
 }
 
 void Shadow::bind_shadow_map(const char* uniform_name,
-                             const std::vector<std::shared_ptr<Shader>>& shaders) const
+                             std::initializer_list<std::shared_ptr<Shader>> shaders) const
 {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, window_width, window_height);

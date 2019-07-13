@@ -4,28 +4,25 @@
 
 MultiSampleFrameBuffer::MultiSampleFrameBuffer(int width, int height,
                                                const char* vertex_path, const char* frag_path,
-                                               unsigned int num_buffers,
-                                               int buffer_num_bits,
-                                               GLenum buffer_type,
+                                               const std::vector<GLenum>& buffer_formats,
                                                bool renderbuffer,
                                                bool stencil)
-  : FrameBuffer (width, height, vertex_path, frag_path,
-                 num_buffers, buffer_num_bits, buffer_type, false, stencil)
+  : FrameBuffer (width, height, vertex_path, frag_path, buffer_formats, false, stencil)
 {
-  auto [color_buffer_format, rb_storage_type, rb_attachment_type] =
-      get_buffer_types(buffer_num_bits, buffer_type, stencil);
+  unsigned int rb_storage_type = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT;
+  unsigned int rb_attachment_type = stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
 
   glGenFramebuffers(1, &multiFBO);
 
-  multi_color_textures.resize(num_buffers);
-  glGenTextures(static_cast<int>(num_buffers), multi_color_textures.data());
+  multi_color_textures.resize(buffer_formats.size());
+  glGenTextures(static_cast<int>(buffer_formats.size()), multi_color_textures.data());
 
   glBindFramebuffer(GL_FRAMEBUFFER, multiFBO);
 
-  for (unsigned int i = 0; i < num_buffers; i++) {
+  for (unsigned int i = 0; i < buffer_formats.size(); i++) {
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, multi_color_textures[i]);
-    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, num_aa_samples,
-                            color_buffer_format, width, height, GL_TRUE);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, NUM_AA_SAMPLES,
+                            buffer_formats[i], width, height, GL_TRUE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
                            GL_TEXTURE_2D_MULTISAMPLE, multi_color_textures[i], 0);
   }
@@ -33,7 +30,7 @@ MultiSampleFrameBuffer::MultiSampleFrameBuffer(int width, int height,
   if (renderbuffer) {
     glGenRenderbuffers(1, &multiRBO);
     glBindRenderbuffer(GL_RENDERBUFFER, multiRBO);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, num_aa_samples, rb_storage_type, width, height);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, NUM_AA_SAMPLES, rb_storage_type, width, height);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, rb_attachment_type, GL_RENDERBUFFER, multiRBO);
   }
 

@@ -14,8 +14,8 @@ namespace Profiling {
     void section_end();
 
   private:
-    std::chrono::time_point<std::chrono::system_clock> start;
-    std::chrono::time_point<std::chrono::system_clock> t0;
+    std::chrono::steady_clock::time_point start;
+    std::chrono::steady_clock::time_point t0;
     std::optional<std::string_view> message;
     std::string_view name;
     bool fps;

@@ -8,14 +8,14 @@ namespace Profiling {
   static TimeAccumulator accumulator;
 
   TimeScope::TimeScope(std::string_view name, bool fps)
-    : start(system_clock::now()),
+    : start(steady_clock::now()),
       name(name),
       fps(fps)
   {
   }
 
   TimeScope::~TimeScope() {
-    auto duration = duration_cast<microseconds>(system_clock::now() - start).count();
+    const auto duration = duration_cast<microseconds>(steady_clock::now() - start).count();
     logger << "" << name << " total time: " << duration << " us";
 
     if (fps) {
@@ -30,12 +30,12 @@ namespace Profiling {
   void TimeScope::section_start(std::optional<std::string_view> message)
   {
     this->message = message;
-    t0 = system_clock::now();
+    t0 = steady_clock::now();
   }
 
   void TimeScope::section_end()
   {
-    auto duration = duration_cast<microseconds>(system_clock::now() - t0).count();
+    auto duration = duration_cast<microseconds>(steady_clock::now() - t0).count();
     logger << name;
 
     if (message.has_value()) {

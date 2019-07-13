@@ -6,14 +6,11 @@
 
 #define GENERATE_EXCEPTION_HEADER(name)                                        \
   struct name : public std::runtime_error {                                    \
-    name(std::string_view msg) : std::runtime_error(msg.data()) {}             \
-    const char* what() const noexcept override;                                \
+    name(std::string_view msg);                                                \
   };                                                                           \
 
 #define GENERATE_EXCEPTION_IMPL(name)                                          \
-  const char* name::what() const noexcept {                                    \
-    return std::runtime_error::what();                                         \
-  }                                                                            \
+  name::name(std::string_view msg) : std::runtime_error(msg.data()) {}         \
 
 GENERATE_EXCEPTION_HEADER(ShaderException)
 GENERATE_EXCEPTION_HEADER(WindowException)

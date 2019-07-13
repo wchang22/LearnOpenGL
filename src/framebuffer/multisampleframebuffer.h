@@ -11,9 +11,7 @@ class MultiSampleFrameBuffer : public FrameBuffer
 public:
   MultiSampleFrameBuffer(int width, int height,
                          const char* vertex_path, const char* frag_path,
-                         unsigned int num_buffers = 1,
-                         int buffer_num_bits = 8,
-                         GLenum buffer_type = GL_UNSIGNED_BYTE,
+                         const std::vector<GLenum>& buffer_formats = { GL_RGBA },
                          bool renderbuffer = true,
                          bool stencil = false);
   ~MultiSampleFrameBuffer() override;

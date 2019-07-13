@@ -3,6 +3,7 @@ layout (location = 0) in vec3 in_position;
 layout (location = 1) in vec3 in_normal;
 layout (location = 2) in vec2 in_texture_coords;
 layout (location = 3) in vec3 in_tangent;
+layout (location = 4) in vec3 in_bitangent;
 
 struct DirLight {
     vec3 direction;
@@ -46,8 +47,7 @@ void main() {
     mat3 normal_mat = transpose(inverse(mat3(model)));
     vec3 t = normalize(normal_mat * in_tangent);
     vec3 n = normalize(normal_mat * in_normal);
-    t = normalize(t - dot(n, t) * n);
-    vec3 b = cross(n, t);
+    vec3 b = normalize(normal_mat * in_bitangent);
 
     mat3 tbn = transpose(mat3(t, b, n));
     vs_out.tangent_light_pos = tbn * point_light[0].position;

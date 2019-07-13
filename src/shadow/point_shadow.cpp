@@ -65,7 +65,7 @@ PointShadow::~PointShadow()
 }
 
 void PointShadow::bind_shadow_map(const char* uniform_name,
-                                  const std::vector<std::shared_ptr<Shader>>& shaders) const
+                                  std::initializer_list<std::shared_ptr<Shader>> shaders) const
 {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, Shadow::window_width, Shadow::window_height);

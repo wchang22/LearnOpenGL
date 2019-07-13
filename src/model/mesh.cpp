@@ -11,7 +11,7 @@ Mesh::Mesh(std::vector<Vertex>&& vertices,
                     vertices.size() * sizeof(Vertex));
   mesh.add_indices(indices.data(), static_cast<int>(indices.size()),
                    indices.size() * sizeof(unsigned int));
-  mesh.add_vertex_attribs({ 3, 3, 2, 3 });
+  mesh.add_vertex_attribs({ 3, 3, 2, 3, 3 });
   mesh.finalize_setup();
 }
 
@@ -21,7 +21,7 @@ Mesh::Mesh(Mesh&& other) noexcept
 {
 }
 
-void Mesh::draw(const Shader& shader, const std::vector<std::string_view> flags) const
+void Mesh::draw(const Shader& shader, std::initializer_list<std::string_view> flags) const
 {
   mesh.draw(shader, textures, flags);
 }

@@ -21,9 +21,9 @@ public:
   ~Object();
 
   void start_setup();
-  void add_vertices(void* vertices, int num_vertices, size_t size, GLenum draw_type = GL_STATIC_DRAW);
-  void add_indices(void* indices, int num_indices, size_t size, GLenum draw_type = GL_STATIC_DRAW);
-  void add_vertex_attribs(const std::vector<int>& vertex_attrib_sizes);
+  void add_vertices(const void* vertices, int num_vertices, size_t size, GLenum draw_type = GL_STATIC_DRAW);
+  void add_indices(const void* indices, int num_indices, size_t size, GLenum draw_type = GL_STATIC_DRAW);
+  void add_vertex_attribs(std::initializer_list<int> vertex_attrib_sizes);
   void finalize_setup();
 
   static void set_model_transform(std::optional<vec3> scale,
@@ -32,13 +32,13 @@ public:
   static void set_world_space_transform(mat4 perspective, mat4 view);
 
   void draw(const Shader& shader, const Textures& textures,
-            const std::vector<std::string_view> flags = {}) const;
-  void draw(const Shader& shader, const std::vector<std::string_view> flags = {}) const;
+            std::initializer_list<std::string_view> flags = {}) const;
+  void draw(const Shader& shader, std::initializer_list<std::string_view> flags = {}) const;
 
   void draw_instanced(const Shader& shader, int num_times, const Textures& textures,
-                      const std::vector<std::string_view> flags = {}) const;
+                      std::initializer_list<std::string_view> flags = {}) const;
   void draw_instanced(const Shader& shader, int num_times,
-                      const std::vector<std::string_view> flags = {}) const;
+                      std::initializer_list<std::string_view> flags = {}) const;
 
 private:
   unsigned int VAO, VBO, EBO;

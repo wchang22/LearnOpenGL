@@ -9,7 +9,7 @@ Model::Model(const char* path)
   load_model(path);
 }
 
-void Model::draw(const Shader& shader, const std::vector<std::string_view> flags) const
+void Model::draw(const Shader& shader, std::initializer_list<std::string_view> flags) const
 {
   glEnable(GL_CULL_FACE);
   for (const Mesh& mesh : meshes) {
@@ -60,6 +60,7 @@ Mesh Model::process_mesh(aiMesh* mesh, const aiScene* scene)
     vertex.position = vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
     vertex.normal = vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
     vertex.tangent = vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
+    vertex.bitangent = vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
 
     if (mesh->mTextureCoords[0]) {
       vertex.texture_coords = vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);

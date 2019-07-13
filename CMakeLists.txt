@@ -13,9 +13,13 @@ find_package(assimp REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(glfw3 REQUIRED)
 
-file(GLOB_RECURSE SOURCES src/* shaders/* include/*)
+file(GLOB_RECURSE SOURCES src/* shaders/*)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lglfw -lGL -ldl -fopenmp -lassimp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lglfw -lGL -ldl -fopenmp -lassimp -std=c++17")
+set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS
+    "-Wall -Wextra -Werror -Wpedantic -Wno-ignored-qualifiers -Wno-deprecated-register")
+
+file(GLOB_RECURSE SOURCES ${SOURCES} include/*)
 
 option(RELEASE "Build in release mode" ON)
 option(LOG "Enable logging" OFF)
@@ -26,7 +30,7 @@ if (RELEASE)
     set(LOG OFF)
     set(PROFILE OFF)
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
     set(LOG ON)
     set(PROFILE ON)
 endif()

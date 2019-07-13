@@ -10,7 +10,7 @@ public:
   ~PointShadow() override;
 
   void bind_shadow_map(const char* uniform_name,
-                       const std::vector<std::shared_ptr<Shader>>& shaders) const override;
+                       std::initializer_list<std::shared_ptr<Shader>> shaders) const override;
 
 private:
   unsigned int UBO;

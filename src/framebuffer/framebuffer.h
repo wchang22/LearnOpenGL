@@ -16,9 +16,7 @@ class FrameBuffer
 public:
   FrameBuffer(int width, int height,
               const char* vertex_path, const char* frag_path,
-              unsigned int num_buffers = 1,
-              int buffer_num_bits = 8,
-              GLenum buffer_type = GL_UNSIGNED_BYTE,
+              const std::vector<GLenum>& buffer_formats = { GL_RGBA },
               bool renderbuffer = true,
               bool stencil = false);
   virtual ~FrameBuffer();
@@ -28,9 +26,7 @@ public:
   virtual void draw_scene() const;
 
 protected:
-  static std::tuple<unsigned, unsigned, unsigned> get_buffer_types(int buffer_num_bits,
-                                                                   GLenum buffer_type,
-                                                                   bool stencil);
+  static std::tuple<GLenum, GLenum> get_pixel_format_type(GLenum buffer_format);
 
   unsigned int RBO, FBO;
   std::vector<unsigned int> color_textures;

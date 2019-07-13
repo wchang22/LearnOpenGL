@@ -18,7 +18,7 @@ public:
   Textures& operator=(Textures&& other) noexcept;
 
   void load_texture_from_image(std::string_view path, std::string_view type);
-  void load_cubemap(const std::vector<std::string>& faces);
+  void load_cubemap(std::initializer_list<const char*> faces);
   void add_texture(std::string_view type, unsigned int id);
   void use_textures(const Shader& shader) const;
   void append(Textures&& other);

@@ -80,8 +80,8 @@ Object Lights::create_light_object()
 {
   Object light;
   light.start_setup();
-  light.add_vertices(cubeVertices, 24, sizeof(cubeVertices));
-  light.add_indices(cubeIndices, 36, sizeof (cubeIndices));
+  light.add_vertices(CUBE_VERTICES, 24, sizeof(CUBE_VERTICES));
+  light.add_indices(CUBE_INDICES, 36, sizeof (CUBE_INDICES));
   light.add_vertex_attribs({ 3, 3, 2 });
   light.finalize_setup();
   return light;

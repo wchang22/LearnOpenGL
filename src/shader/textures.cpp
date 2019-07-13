@@ -86,7 +86,7 @@ void Textures::load_texture_from_image(std::string_view path, std::string_view t
   stbi_image_free(image_data);
 }
 
-void Textures::load_cubemap(const std::vector<std::string>& faces)
+void Textures::load_cubemap(std::initializer_list<const char*> faces)
 {
   texture_types.emplace_back("texture_cubemap");
   texture_paths.emplace_back("");
@@ -98,8 +98,8 @@ void Textures::load_cubemap(const std::vector<std::string>& faces)
 
   int width, height, num_channels;
 
-  for (unsigned int i = 0; i < faces.size(); i++) {
-    const char* path = faces[i].c_str();
+  unsigned int i = 0;
+  for (const auto path : faces) {
     unsigned char* image_data = stbi_load(path, &width, &height, &num_channels, 0);
 
     if (!image_data) {
@@ -111,7 +111,7 @@ void Textures::load_cubemap(const std::vector<std::string>& faces)
     constexpr int image_format = GL_RGB;
     constexpr GLenum image_type = GL_UNSIGNED_BYTE;
 
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mipmap_level, texture_type,
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i++, mipmap_level, texture_type,
                  width, height, 0, image_format, image_type, image_data);
     stbi_image_free(image_data);
   }

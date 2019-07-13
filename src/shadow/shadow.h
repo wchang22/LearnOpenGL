@@ -20,7 +20,7 @@ public:
 
   virtual void bind_depth_map() const;
   virtual void bind_shadow_map(const char* uniform_name,
-                               const std::vector<std::shared_ptr<Shader>>& shaders) const;
+                               std::initializer_list<std::shared_ptr<Shader>> shaders) const;
 
 protected:
   int width, height, window_width, window_height;
