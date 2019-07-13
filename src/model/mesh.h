@@ -28,6 +28,8 @@ public:
   Mesh(Mesh&& other) noexcept;
 
   void draw(const Shader& shader, std::initializer_list<std::string_view> flags = {}) const;
+  void draw_instanced(const Shader& shader, int num_times,
+                      std::initializer_list<std::string_view> flags = {}) const;
 
 private:
   Textures textures;

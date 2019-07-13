@@ -3,14 +3,19 @@
 #include <numeric>
 
 unsigned int Object::UBO = 0;
+unsigned int Object::SSBO = 0;
 
 Object::Object() : EBO(0), num_vertices(0), num_indices(0)
 {
   if (UBO == 0) {
     glGenBuffers(1, &UBO);
     glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-    glBufferData(GL_UNIFORM_BUFFER, 3 * sizeof(mat4), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(mat4), nullptr, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, UBO);
+  }
+  if (SSBO == 0) {
+    glGenBuffers(1, &SSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, SSBO);
   }
 
   glGenVertexArrays(1, &VAO);
@@ -76,25 +81,31 @@ void Object::finalize_setup()
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Object::set_model_transform(std::optional<vec3> scale,
-                                 std::optional<std::pair<float, vec3>> rotate,
-                                 std::optional<vec3> translate)
+void Object::set_model_transforms(const std::vector<Transform>& transforms)
 {
-  mat4 model(1.0f);
-  if (translate.has_value()) {
-    model *= glm::translate(translate.value());
-  }
-  if (rotate.has_value()) {
-    auto [angle, axis] = rotate.value();
-    model *= glm::rotate(angle, axis);
-  }
-  if (scale.has_value()) {
-    model *= glm::scale(scale.value());
+  std::vector<mat4> model_matrices;
+  model_matrices.reserve(transforms.size());
+
+  for (const auto& [scale, rotate, translate] : transforms) {
+    mat4 model(1.0f);
+    if (translate.has_value()) {
+      model *= glm::translate(translate.value());
+    }
+    if (rotate.has_value()) {
+      auto [angle, axis] = rotate.value();
+      model *= glm::rotate(angle, axis);
+    }
+    if (scale.has_value()) {
+      model *= glm::scale(scale.value());
+    }
+
+    model_matrices.emplace_back(std::move(model));
   }
 
-  glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof (mat4), sizeof (mat4), &model[0][0]);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<int>(model_matrices.size() * sizeof (mat4)),
+               model_matrices.data(), GL_STATIC_DRAW);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void Object::set_world_space_transform(mat4 perspective, mat4 view)

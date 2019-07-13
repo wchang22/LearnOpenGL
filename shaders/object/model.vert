@@ -31,20 +31,23 @@ out V_DATA {
 layout (std140, binding = 0) uniform Matrices {
     mat4 perspective;
     mat4 view;
-    mat4 model;
 };
 
-layout (std140, binding = 1) uniform Lights {
+layout (std430, binding = 1) buffer Model {
+    mat4 model[];
+};
+
+layout (std140, binding = 2) uniform Lights {
     vec3 view_position;
     DirLight dir_light[5];
     PointLight point_light[5];
 };
 
 void main() {
-    vs_out.position = vec3(model * vec4(in_position, 1.0));
+    vs_out.position = vec3(model[gl_InstanceID] * vec4(in_position, 1.0));
     vs_out.texture_coords = in_texture_coords;
 
-    mat3 normal_mat = transpose(inverse(mat3(model)));
+    mat3 normal_mat = transpose(inverse(mat3(model[gl_InstanceID])));
     vec3 t = normalize(normal_mat * in_tangent);
     vec3 n = normalize(normal_mat * in_normal);
     vec3 b = normalize(normal_mat * in_bitangent);
@@ -54,5 +57,5 @@ void main() {
     vs_out.tangent_view_pos = tbn * view_position;
     vs_out.tangent_frag_pos = tbn * vs_out.position;
 
-    gl_Position = perspective * view * model * vec4(in_position, 1.0);
+    gl_Position = perspective * view * model[gl_InstanceID] * vec4(in_position, 1.0);
 }

@@ -23,5 +23,11 @@ Mesh::Mesh(Mesh&& other) noexcept
 
 void Mesh::draw(const Shader& shader, std::initializer_list<std::string_view> flags) const
 {
-  mesh.draw(shader, textures, flags);
+  draw_instanced(shader, 1, flags);
+}
+
+void Mesh::draw_instanced(const Shader& shader, int num_times,
+                          std::initializer_list<std::string_view> flags) const
+{
+  mesh.draw_instanced(shader, num_times, textures, flags);
 }

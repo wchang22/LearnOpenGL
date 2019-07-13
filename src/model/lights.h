@@ -2,6 +2,7 @@
 #define LIGHTS_H
 
 #include "model/object.h"
+#include "model/model.h"
 #include "display/camera.h"
 #include "shader/shader.h"
 
@@ -12,6 +13,10 @@
 typedef glm::vec3 vec3;
 typedef glm::vec4 vec4;
 typedef glm::mat4 mat4;
+
+constexpr int NUM_LIGHTS = 5;
+constexpr int DIR_NUM_ELEMS = 4;
+constexpr int POINT_NUM_ELEMS = 5;
 
 class Lights
 {
@@ -42,12 +47,11 @@ public:
   void draw(const Shader& shader) const;
 
 private:
-  Object create_light_object();
-
   unsigned int UBO;
   std::shared_ptr<Camera> camera;
-  std::vector<std::pair<Object, PointLight>> point_lights;
-  std::vector<std::pair<Object, DirLight>> dir_lights;
+  Model model_light;
+  std::vector<PointLight> point_lights;
+  std::vector<DirLight> dir_lights;
 };
 
 #endif // LIGHTS_H

@@ -11,9 +11,15 @@ Model::Model(const char* path)
 
 void Model::draw(const Shader& shader, std::initializer_list<std::string_view> flags) const
 {
+  draw_instanced(shader, 1, flags);
+}
+
+void Model::draw_instanced(const Shader& shader, int num_times,
+                           std::initializer_list<std::string_view> flags) const
+{
   glEnable(GL_CULL_FACE);
   for (const Mesh& mesh : meshes) {
-    mesh.draw(shader, flags);
+    mesh.draw_instanced(shader, num_times, flags);
   }
   glDisable(GL_CULL_FACE);
 }

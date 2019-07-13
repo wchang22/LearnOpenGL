@@ -72,12 +72,12 @@ void Display::init_buffers() {
 }
 
 void Display::init_textures() {
-  cube_textures.load_texture_from_image("../../assets/bricks2.jpg", "texture_diffuse");
-  cube_textures.load_texture_from_image("../../assets/bricks2_normal.jpg", "texture_normal");
-  cube_textures.load_texture_from_image("../../assets/bricks2_disp.jpg", "texture_height");
-  toybox_textures.load_texture_from_image("../../assets/wood.png", "texture_diffuse");
-  toybox_textures.load_texture_from_image("../../assets/toy_box_normal.png", "texture_normal");
-  toybox_textures.load_texture_from_image("../../assets/toy_box_disp.png", "texture_height");
+  cube_textures.load_texture_from_image("../../assets/bricks/bricks2.jpg", "texture_diffuse");
+  cube_textures.load_texture_from_image("../../assets/bricks/bricks2_normal.jpg", "texture_normal");
+  cube_textures.load_texture_from_image("../../assets/bricks/bricks2_disp.jpg", "texture_height");
+  toybox_textures.load_texture_from_image("../../assets/box/wood.png", "texture_diffuse");
+  toybox_textures.load_texture_from_image("../../assets/box/toy_box_normal.png", "texture_normal");
+  toybox_textures.load_texture_from_image("../../assets/box/toy_box_disp.png", "texture_height");
   skybox_textures.load_cubemap({
     "../../assets/space/right.jpg",
     "../../assets/space/left.jpg",
@@ -104,37 +104,42 @@ void Display::init_shaders() {
 
 void Display::draw_cubes(const Shader& shader) const
 {
-  constexpr vec3 positions[] = {
-    vec3(0.0f, -2.0f, 0.0f),
-    vec3(2.0f, 4.0f, 2.0f),
-    vec3(-1.0f, 0.0f, -1.0f),
-    vec3(2.0f, 0.0f, 0.0f)
+  static const std::vector<Object::Transform> transforms {
+    { {}, {}, vec3(0.0f, -2.0f, 0.0f) },
+    { {}, {}, vec3(2.0f, 4.0f, 2.0f) },
+    { {}, {}, vec3(-1.0f, 0.0f, -1.0f) },
+    { {}, {}, vec3(2.0f, 0.0f, 0.0f) }
   };
 
-  for (const auto& position : positions) {
-    Object::set_model_transform({}, {}, position);
-    cube.draw(shader, toybox_textures);
-  }
+  Object::set_model_transforms(transforms);
+  cube.draw_instanced(shader, 3, toybox_textures);
 }
 
 void Display::draw_lights(const Shader& shader) const
 {
-  Object::set_model_transform(vec3(0.2f), {}, lights.get_point_light_pos(0));
+  Object::set_model_transforms({
+    { vec3(0.05f), {}, lights.get_point_light_pos(0) }
+  });
   lights.draw(shader);
 }
 
 void Display::draw_box(const Shader& shader) const
 {
-  Object::set_model_transform(vec3(15.0f), {}, {});
+  Object::set_model_transforms({
+   { vec3(15.0f), {}, {} }
+  });
   cube.draw(shader, cube_textures, { "reverse_normal" });
 }
 
 void Display::draw_model(const Shader& shader) const
 {
-  Object::set_model_transform(vec3(0.2f),
-                              std::make_pair(-static_cast<float>(glfwGetTime()),
-                                             vec3(0.0f, 1.0f, 0.0f)),
-                              vec3(0.0f, -0.5f, 0.0f));
+  Object::set_model_transforms({
+    {
+      vec3(0.2f),
+      std::make_pair(-static_cast<float>(glfwGetTime()), vec3(0.0f, 1.0f, 0.0f)),
+      vec3(0.0f, -0.5f, 0.0f)
+    },
+  });
   model_nanosuit.draw(shader, { "gamma" });
 }
 
