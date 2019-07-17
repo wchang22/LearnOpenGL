@@ -41,7 +41,6 @@ public:
 
   void add_dir_light(DirLight&& light);
   void add_point_light(PointLight&& light);
-  vec3 get_point_light_pos(unsigned int i) const;
 
   void update() const;
   void draw(const Shader& shader) const;
@@ -52,6 +51,7 @@ private:
   Model model_light;
   std::vector<PointLight> point_lights;
   std::vector<DirLight> dir_lights;
+  std::vector<Object::Transform> point_light_transforms;
 };
 
 #endif // LIGHTS_H

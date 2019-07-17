@@ -10,7 +10,7 @@ FrameBuffer::FrameBuffer(int width, int height,
                          bool stencil)
   : width(width),
     height(height),
-    shader(vertex_path, frag_path)
+    shader(std::make_shared<Shader>(vertex_path, frag_path))
 {
   unsigned int rb_storage_type = stencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT;
   unsigned int rb_attachment_type = stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
@@ -113,6 +113,22 @@ void FrameBuffer::unbind_framebuffer() const
 void FrameBuffer::draw_scene() const
 {
   glDisable(GL_DEPTH_TEST);
-  unbind_framebuffer();
-  rect.draw(shader, textures);
+  rect.draw(*shader, textures);
+}
+
+void FrameBuffer::blit_depth() const
+{
+  glEnable(GL_DEPTH_TEST);
+  int current_FBO;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &current_FBO);
+
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<unsigned int>(current_FBO));
+  glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+  glBindFramebuffer(GL_FRAMEBUFFER, static_cast<unsigned int>(current_FBO));
+}
+
+std::shared_ptr<Shader> FrameBuffer::get_shader() const
+{
+  return shader;
 }

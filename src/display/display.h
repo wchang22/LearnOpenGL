@@ -39,6 +39,7 @@ private:
   std::shared_ptr<Shader> model_shaders;
   std::shared_ptr<Shader> point_depth_shaders;
   std::shared_ptr<Shader> light_shaders;
+  std::shared_ptr<Shader> gbuffer_shaders;
   std::shared_ptr<Camera> camera;
 
   Textures cube_textures;
@@ -51,6 +52,7 @@ private:
   Model model_nanosuit;
   PointShadow point_shadow;
   GaussianBlur blur;
+  FrameBuffer gbuffer;
 
   Lights lights;
 };

@@ -1,5 +1,7 @@
 # version 450 core
 
+flat in int instanceID;
+
 struct DirLight {
     vec3 direction;
     vec3 ambient;
@@ -33,7 +35,9 @@ vec3 filter_bright_colors(vec3 color) {
 }
 
 void main() {
-    vec3 color = point_light[0].ambient + point_light[0].diffuse + point_light[0].specular;
+    vec3 color = point_light[instanceID].ambient +
+                 point_light[instanceID].diffuse +
+                 point_light[instanceID].specular;
     frag_color = vec4(color, 1.0);
     bright_color = vec4(filter_bright_colors(color), 1.0);
 }

@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 #include <tuple>
 #include <vector>
+#include <memory>
 
 class FrameBuffer
 {
@@ -24,6 +25,8 @@ public:
   virtual void bind_framebuffer() const;
   virtual void unbind_framebuffer() const;
   virtual void draw_scene() const;
+  virtual void blit_depth() const;
+  virtual std::shared_ptr<Shader> get_shader() const;
 
 protected:
   static std::tuple<GLenum, GLenum> get_pixel_format_type(GLenum buffer_format);
@@ -31,7 +34,7 @@ protected:
   unsigned int RBO, FBO;
   std::vector<unsigned int> color_textures;
   int width, height;
-  Shader shader;
+  std::shared_ptr<Shader> shader;
   Object rect;
   Textures textures;
 };

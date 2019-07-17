@@ -43,28 +43,29 @@ void Lights::add_point_light(Lights::PointLight&& light)
 
   glBindBuffer(GL_UNIFORM_BUFFER, UBO);
   glBufferSubData(GL_UNIFORM_BUFFER,
-                  static_cast<long>((1 + (DIR_NUM_ELEMS * NUM_LIGHTS) + num_light) * sizeof (vec4)),
+                  static_cast<long>((1 + (DIR_NUM_ELEMS * NUM_LIGHTS) + num_light * POINT_NUM_ELEMS)
+                                    * sizeof (vec4)),
                   sizeof (vec3), &light.position[0]);
   glBufferSubData(GL_UNIFORM_BUFFER,
-                  static_cast<long>((2 + (DIR_NUM_ELEMS * NUM_LIGHTS) + num_light) * sizeof (vec4)),
+                  static_cast<long>((2 + (DIR_NUM_ELEMS * NUM_LIGHTS) + num_light * POINT_NUM_ELEMS)
+                                    * sizeof (vec4)),
                   sizeof (vec3), &light.ambient[0]);
   glBufferSubData(GL_UNIFORM_BUFFER,
-                  static_cast<long>((3 + (DIR_NUM_ELEMS * NUM_LIGHTS) + num_light) * sizeof (vec4)),
+                  static_cast<long>((3 + (DIR_NUM_ELEMS * NUM_LIGHTS) + num_light * POINT_NUM_ELEMS)
+                                    * sizeof (vec4)),
                   sizeof (vec3), &light.diffuse[0]);
   glBufferSubData(GL_UNIFORM_BUFFER,
-                  static_cast<long>((4 + (DIR_NUM_ELEMS * NUM_LIGHTS) + num_light) * sizeof (vec4)),
+                  static_cast<long>((4 + (DIR_NUM_ELEMS * NUM_LIGHTS) + num_light * POINT_NUM_ELEMS)
+                                    * sizeof (vec4)),
                   sizeof (vec3), &light.specular[0]);
   glBufferSubData(GL_UNIFORM_BUFFER,
-                  static_cast<long>((5 + (DIR_NUM_ELEMS * NUM_LIGHTS) + num_light) * sizeof (vec4)),
+                  static_cast<long>((5 + (DIR_NUM_ELEMS * NUM_LIGHTS) + num_light * POINT_NUM_ELEMS)
+                                    * sizeof (vec4)),
                   sizeof (vec3), &light.attenuation[0]);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+  point_light_transforms.push_back({vec3(0.05f), {}, light.position});
   point_lights.emplace_back(std::move(light));
-}
-
-vec3 Lights::get_point_light_pos(unsigned int i) const
-{
-  return point_lights.at(i).position;
 }
 
 void Lights::update() const
@@ -76,5 +77,7 @@ void Lights::update() const
 
 void Lights::draw(const Shader& shader) const
 {
-  model_light.draw_instanced(shader, static_cast<int>(dir_lights.size() + point_lights.size()));
+  Object::set_model_transforms(point_light_transforms);
+
+  model_light.draw_instanced(shader, static_cast<int>(point_lights.size()));
 }

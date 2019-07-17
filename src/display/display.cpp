@@ -15,6 +15,9 @@ Display::Display(std::shared_ptr<Camera> camera)
     blur(Window::width(), Window::height(),
          "../../shaders/processing/blur.vert", "../../shaders/processing/blur.frag",
          "../../shaders/processing/fb.vert", "../../shaders/processing/fb.frag"),
+    gbuffer(Window::width(), Window::height(),
+            "../../shaders/processing/deferred.vert", "../../shaders/processing/deferred.frag",
+            { GL_RGB16F, GL_RGBA16F, GL_RGBA, GL_RGB16F, GL_RGB16F, GL_RGB16F }),
     lights(camera)
 {
   srand(static_cast<unsigned int>(time(nullptr)));
@@ -27,24 +30,32 @@ Display::Display(std::shared_ptr<Camera> camera)
 void Display::draw() const {
   Object::set_world_space_transform(camera->perspective(), camera->lookat());
 
-  point_shadow.bind_depth_map();
+//  point_shadow.bind_depth_map();
 
-  draw_model(*point_depth_shaders);
-  draw_cubes(*point_depth_shaders);
-  draw_box(*point_depth_shaders);
+//  draw_model(*point_depth_shaders);
+//  draw_cubes(*point_depth_shaders);
 
-  point_shadow.bind_shadow_map("shadow_map", { cube_shaders, model_shaders });
+//  point_shadow.bind_shadow_map("shadow_map", { gbuffer.get_shader()});
 
   lights.update();
 
+  gbuffer.bind_framebuffer();
+
+  draw_cubes(*gbuffer_shaders);
+  draw_box(*gbuffer_shaders);
+  draw_model(*gbuffer_shaders);
+
+  gbuffer.unbind_framebuffer();
+
   blur.bind_framebuffer();
 
-  draw_cubes(*cube_shaders);
-  draw_box(*cube_shaders);
-  draw_model(*model_shaders);
+  gbuffer.draw_scene();
+  gbuffer.blit_depth();
+
   draw_lights(*light_shaders);
   draw_skybox(*skybox_shaders);
 
+  blur.unbind_framebuffer();
   blur.blur_scene();
 }
 
@@ -69,6 +80,14 @@ void Display::init_buffers() {
      vec3(3.0f),
      vec3(1.0f, 0.045f, 0.016f),
    });
+
+  lights.add_point_light({
+     vec3(-2.0f, 3.0f, 2.0f),
+     vec3(0.05f),
+     vec3(0.0f, 0.0f, 5.0f),
+     vec3(1.0f, 1.0f, 3.0f),
+     vec3(1.0f, 0.045f, 0.016f),
+   });
 }
 
 void Display::init_textures() {
@@ -89,17 +108,19 @@ void Display::init_textures() {
 }
 
 void Display::init_shaders() {
-  cube_shaders = std::make_unique<Shader>("../../shaders/object/cube.vert",
+  cube_shaders = std::make_shared<Shader>("../../shaders/object/cube.vert",
                                      "../../shaders/object/cube.frag");
-  light_shaders = std::make_unique<Shader>("../../shaders/object/light.vert",
+  light_shaders = std::make_shared<Shader>("../../shaders/object/light.vert",
                                            "../../shaders/object/light.frag");
-  model_shaders = std::make_unique<Shader>("../../shaders/object/model.vert",
+  model_shaders = std::make_shared<Shader>("../../shaders/object/model.vert",
                                            "../../shaders/object/model.frag");
-  skybox_shaders = std::make_unique<Shader>("../../shaders/object/skybox.vert",
+  skybox_shaders = std::make_shared<Shader>("../../shaders/object/skybox.vert",
                                             "../../shaders/object/skybox.frag");
-  point_depth_shaders = std::make_unique<Shader>("../../shaders/shadow/point_depth.vert",
+  point_depth_shaders = std::make_shared<Shader>("../../shaders/shadow/point_depth.vert",
                                                  "../../shaders/shadow/point_depth.frag",
                                                  "../../shaders/shadow/point_depth.geom");
+  gbuffer_shaders = std::make_shared<Shader>("../../shaders/processing/gbuffer.vert",
+                                             "../../shaders/processing/gbuffer.frag");
 }
 
 void Display::draw_cubes(const Shader& shader) const
@@ -117,9 +138,6 @@ void Display::draw_cubes(const Shader& shader) const
 
 void Display::draw_lights(const Shader& shader) const
 {
-  Object::set_model_transforms({
-    { vec3(0.05f), {}, lights.get_point_light_pos(0) }
-  });
   lights.draw(shader);
 }
 

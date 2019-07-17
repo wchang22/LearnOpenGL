@@ -11,6 +11,9 @@ layout (std430, binding = 1) buffer Model {
     mat4 model[];
 };
 
+out int instanceID;
+
 void main() {
     gl_Position = perspective * view * model[gl_InstanceID] * vec4(in_position, 1.0);
+    instanceID = gl_InstanceID;
 }

@@ -146,9 +146,8 @@ void Textures::use_textures(const Shader& shader) const {
       glUniform1i(shader.get_uniform_location(name + "1"), static_cast<GLint>(i));
       texture_counts[name] = 1;
     } else {
-      glUniform1i(shader.get_uniform_location(name + std::to_string(it->second)),
+      glUniform1i(shader.get_uniform_location(name + std::to_string(++it->second)),
                   static_cast<GLint>(i));
-      it->second++;
     }
 
     if (name == "texture_cubemap") {
