@@ -19,8 +19,16 @@ struct PointLight {
 
 layout (std140, binding = 2) uniform Lights {
     vec3 view_position;
-    DirLight dir_light[5];
-    PointLight point_light[5];
+    int num_dir_lights;
+    int num_point_lights;
+};
+
+layout (std140, binding = 3) buffer DirLights {
+    DirLight dir_light[];
+};
+
+layout (std140, binding = 4) buffer PointLights {
+    PointLight point_light[];
 };
 
 layout (location = 0) out vec4 frag_color;

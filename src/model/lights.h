@@ -46,7 +46,7 @@ public:
   void draw(const Shader& shader) const;
 
 private:
-  unsigned int UBO;
+  unsigned int UBO, dir_SSBO, point_SSBO;
   std::shared_ptr<Camera> camera;
   Model model_light;
   std::vector<PointLight> point_lights;

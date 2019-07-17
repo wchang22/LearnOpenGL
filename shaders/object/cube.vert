@@ -23,7 +23,7 @@ struct PointLight {
 out V_DATA {
     vec3 position;
     vec2 texture_coords;
-    vec3 tangent_light_pos;
+    mat3 tbn;
     vec3 tangent_view_pos;
     vec3 tangent_frag_pos;
 } vs_out;
@@ -39,8 +39,16 @@ layout (std430, binding = 1) buffer Model {
 
 layout (std140, binding = 2) uniform Lights {
     vec3 view_position;
-    DirLight dir_light[5];
-    PointLight point_light[5];
+    int num_dir_lights;
+    int num_point_lights;
+};
+
+layout (std140, binding = 3) buffer DirLights {
+    DirLight dir_light[];
+};
+
+layout (std140, binding = 4) buffer PointLights {
+    PointLight point_light[];
 };
 
 uniform bool reverse_normal;
@@ -55,7 +63,7 @@ void main() {
     vec3 b = normalize(normal_mat * in_bitangent);
 
     mat3 tbn = transpose(mat3(t, b, n));
-    vs_out.tangent_light_pos = tbn * point_light[0].position;
+    vs_out.tbn = tbn;
     vs_out.tangent_view_pos = tbn * view_position;
     vs_out.tangent_frag_pos = tbn * vs_out.position;
 

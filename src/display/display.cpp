@@ -35,9 +35,7 @@ void Display::draw() const {
 //  draw_model(*point_depth_shaders);
 //  draw_cubes(*point_depth_shaders);
 
-//  point_shadow.bind_shadow_map("shadow_map", { gbuffer.get_shader()});
-
-  lights.update();
+//  point_shadow.bind_shadow_map("shadow_map", { gbuffer.get_shader() });
 
   gbuffer.bind_framebuffer();
 
@@ -74,20 +72,25 @@ void Display::init_buffers() {
   skybox.finalize_setup();
 
   lights.add_point_light({
-     POINT_LIGHT_POS,
-     vec3(0.05f),
-     vec3(5.0f),
-     vec3(3.0f),
-     vec3(1.0f, 0.045f, 0.016f),
-   });
+   POINT_LIGHT_POS,
+   vec3(0.05f),
+   vec3(0.5f, 0.5f, 2.0f),
+   vec3(0.5f, 0.5f, 2.0f),
+   vec3(1.0f, 0.045f, 0.016f),
+  });
 
-  lights.add_point_light({
-     vec3(-2.0f, 3.0f, 2.0f),
+  for (unsigned int i = 0; i < 5; i++) {
+    float x = (static_cast<float>((rand() % 100)) / 100.0f) * 12.0f - 6.0f;
+    float y = (static_cast<float>((rand() % 100)) / 100.0f) * 12.0f - 6.0f;
+    float z = (static_cast<float>((rand() % 100)) / 100.0f) * 12.0f - 6.0f;
+    lights.add_point_light({
+     vec3(x, y, z),
      vec3(0.05f),
-     vec3(0.0f, 0.0f, 5.0f),
-     vec3(1.0f, 1.0f, 3.0f),
+     vec3(0.5f, 0.5f, 2.0f),
+     vec3(0.5f, 0.5f, 2.0f),
      vec3(1.0f, 0.045f, 0.016f),
-   });
+    });
+  }
 }
 
 void Display::init_textures() {

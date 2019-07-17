@@ -23,7 +23,7 @@ struct PointLight {
 in V_DATA {
     vec3 position;
     vec2 texture_coords;
-    vec3 tangent_light_pos;
+    mat3 tbn;
     vec3 tangent_view_pos;
     vec3 tangent_frag_pos;
 } fs_in;
@@ -33,8 +33,16 @@ layout (location = 1) out vec4 bright_color;
 
 layout (std140, binding = 2) uniform Lights {
     vec3 view_position;
-    DirLight dir_light[5];
-    PointLight point_light[5];
+    int num_dir_lights;
+    int num_point_lights;
+};
+
+layout (std140, binding = 3) buffer DirLights {
+    DirLight dir_light[];
+};
+
+layout (std140, binding = 4) buffer PointLights {
+    PointLight point_light[];
 };
 
 layout (std140, binding = 9) uniform PointShadow {
@@ -112,9 +120,13 @@ void main() {
     vec3 diffuse_texture = texture(texture_diffuse1, fs_in.texture_coords).rgb;
     float shadow = calc_shadow(point_light[0], fs_in.position, normal);
 
-    vec3 color = calc_point_light(point_light[0], normal,
-                                  fs_in.tangent_light_pos, fs_in.tangent_frag_pos, eye_direction,
+    vec3 color = vec3(0.0);
+    for (int i = 0; i < num_point_lights; i++) {
+        vec3 tangent_light_pos = fs_in.tbn * point_light[i].position;
+        color += calc_point_light(point_light[i], normal,
+                                  tangent_light_pos, fs_in.tangent_frag_pos, eye_direction,
                                   diffuse_texture, vec3(0.2), shadow);
+    }
 
     frag_color = vec4(color, 1.0);
     bright_color = vec4(filter_bright_colors(color), 1.0);
