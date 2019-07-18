@@ -80,6 +80,12 @@ std::tuple<GLenum, GLenum> FrameBuffer::get_pixel_format_type(GLenum buffer_form
     case GL_RGB16F:
     case GL_RGB32F:
       return std::make_tuple(GL_RGB, GL_FLOAT);
+    case GL_RG:
+    case GL_RG16:
+      return std::make_tuple(GL_RG, GL_UNSIGNED_BYTE);
+    case GL_RG16F:
+    case GL_RG32F:
+      return std::make_tuple(GL_RG, GL_FLOAT);
     default:
       throw FrameBufferException("Unknown framebuffer type: " + std::to_string(buffer_format));
   }

@@ -106,9 +106,8 @@ void main()
 {
     vec3 position = texture(texture_screen1, texture_coords).rgb;
     vec3 normal = texture(texture_screen2, texture_coords).rgb;
-    float height = texture(texture_screen2, texture_coords).a;
     vec3 diffuse = texture(texture_screen3, texture_coords).rgb;
-    float specular = texture(texture_screen3, texture_coords).a;
+    vec3 specular = texture(texture_screen3, texture_coords).aaa;
     vec3 t = texture(texture_screen4, texture_coords).rgb;
     vec3 b = texture(texture_screen5, texture_coords).rgb;
     vec3 n = texture(texture_screen6, texture_coords).rgb;
@@ -117,14 +116,19 @@ void main()
     vec3 tangent_frag_pos = tbn * position;
     vec3 eye_direction = normalize(tangent_view_pos - tangent_frag_pos);
 
-    float shadow = 0.0;//calc_shadow(point_light[0], position, normal);
+    float shadow = 0.0;
+
+//    for (int i = 0; i < num_point_lights; i++) {
+//        shadow += calc_shadow(point_light[i], position, normal);
+//    }
+    shadow = clamp(shadow, 0.0, 1.0);
 
     vec3 color = vec3(0.0);
 
     for (int i = 0; i < num_point_lights; i++) {
         vec3 tangent_light_pos = tbn * point_light[i].position;
         color += calc_point_light(point_light[i], normal, tangent_light_pos, tangent_frag_pos,
-                                  eye_direction, diffuse, vec3(specular), shadow);
+                                  eye_direction, diffuse, specular, shadow);
     }
 
     frag_color = vec4(color, 1.0);

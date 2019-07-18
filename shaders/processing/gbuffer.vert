@@ -51,6 +51,8 @@ out V_DATA {
     vec3 t;
     vec3 b;
     vec3 n;
+    vec3 tangent_view_pos;
+    vec3 tangent_frag_pos;
 } vs_out;
 
 void main() {
@@ -65,6 +67,9 @@ void main() {
     vs_out.t = t;
     vs_out.b = b;
     vs_out.n = n;
+    mat3 tbn = transpose(mat3(t, b, n));
+    vs_out.tangent_view_pos = tbn * view_position;
+    vs_out.tangent_frag_pos = tbn * vs_out.position;
 
     gl_Position = perspective * view * model[gl_InstanceID] * vec4(in_position, 1.0);
 }

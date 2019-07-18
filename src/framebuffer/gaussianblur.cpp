@@ -1,4 +1,5 @@
 #include "gaussianblur.h"
+#include "util/profiling/profiling.h"
 
 GaussianBlur::GaussianBlur(int width, int height,
                            const char* blur_vertex_path, const char* blur_frag_path,
@@ -20,23 +21,29 @@ void GaussianBlur::unbind_framebuffer() const
 
 void GaussianBlur::blur() const
 {
+  PROFILE_SCOPE("GaussianBlur");
+
   constexpr int amount = 5;
 
   glBindFramebuffer(GL_FRAMEBUFFER, blur_buffer.FBO);
 
+  PROFILE_SECTION_START("Blur1");
   Textures textures;
   textures.add_texture("image", hdr_buffer.color_textures[1]);
   blur_buffer.rect.draw(*blur_buffer.shader, textures);
 
   textures.clear();
   textures.add_texture("image", blur_buffer.color_textures.front());
+  PROFILE_SECTION_END();
 
   for (unsigned int i = 1; i < amount; i++) {
+    PROFILE_SECTION_START("Blur" + std::to_string(i + 1));
     if ((i & 1) == 1) {
       blur_buffer.rect.draw(*blur_buffer.shader, textures, { "horizontal" });
     } else {
       blur_buffer.rect.draw(*blur_buffer.shader, textures);
     }
+    PROFILE_SECTION_END();
   }
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

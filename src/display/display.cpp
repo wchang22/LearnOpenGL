@@ -1,6 +1,7 @@
 #include "display.h"
 #include "util/data.h"
 #include "display/window.h"
+#include "util/profiling/profiling.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glad/glad.h>
@@ -17,7 +18,7 @@ Display::Display(std::shared_ptr<Camera> camera)
          "../../shaders/processing/fb.vert", "../../shaders/processing/fb.frag"),
     gbuffer(Window::width(), Window::height(),
             "../../shaders/processing/deferred.vert", "../../shaders/processing/deferred.frag",
-            { GL_RGB16F, GL_RGBA16F, GL_RGBA, GL_RGB16F, GL_RGB16F, GL_RGB16F }),
+            { GL_RGB16F, GL_RGB16F, GL_RGBA, GL_RGB16F, GL_RGB16F, GL_RGB16F }),
     lights(camera)
 {
   srand(static_cast<unsigned int>(time(nullptr)));
@@ -28,6 +29,7 @@ Display::Display(std::shared_ptr<Camera> camera)
 }
 
 void Display::draw() const {
+  PROFILE_SCOPE("Draw")
   Object::set_world_space_transform(camera->perspective(), camera->lookat());
 
 //  point_shadow.bind_depth_map();
@@ -37,6 +39,9 @@ void Display::draw() const {
 
 //  point_shadow.bind_shadow_map("shadow_map", { gbuffer.get_shader() });
 
+  lights.update();
+
+  PROFILE_SECTION_START("Geometry Pass")
   gbuffer.bind_framebuffer();
 
   draw_cubes(*gbuffer_shaders);
@@ -44,17 +49,24 @@ void Display::draw() const {
   draw_model(*gbuffer_shaders);
 
   gbuffer.unbind_framebuffer();
+  PROFILE_SECTION_END()
 
+  PROFILE_SECTION_START("Lighting Pass")
   blur.bind_framebuffer();
 
   gbuffer.draw_scene();
   gbuffer.blit_depth();
+  PROFILE_SECTION_END()
 
+  PROFILE_SECTION_START("Forward Rendering")
   draw_lights(*light_shaders);
   draw_skybox(*skybox_shaders);
+  PROFILE_SECTION_END()
 
+  PROFILE_SECTION_START("Blur")
   blur.unbind_framebuffer();
   blur.blur_scene();
+  PROFILE_SECTION_END()
 }
 
 void Display::init_buffers() {
@@ -136,7 +148,7 @@ void Display::draw_cubes(const Shader& shader) const
   };
 
   Object::set_model_transforms(transforms);
-  cube.draw_instanced(shader, 3, toybox_textures);
+  cube.draw_instanced(shader, 3, toybox_textures, { "parallax" });
 }
 
 void Display::draw_lights(const Shader& shader) const
@@ -149,7 +161,7 @@ void Display::draw_box(const Shader& shader) const
   Object::set_model_transforms({
    { vec3(15.0f), {}, {} }
   });
-  cube.draw(shader, cube_textures, { "reverse_normal" });
+  cube.draw(shader, cube_textures, { "reverse_normal", "parallax" });
 }
 
 void Display::draw_model(const Shader& shader) const
