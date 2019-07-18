@@ -2,23 +2,22 @@
 #define TIMESCOPE_H
 
 #include <chrono>
-#include <optional>
+#include <string>
 
 namespace Profiling {
   class TimeScope {
   public:
-    TimeScope(std::string_view name, bool fps = false);
+    TimeScope(const std::string& name);
     ~TimeScope();
 
-    void section_start(std::optional<std::string_view> message = std::nullopt);
+    void section_start(const std::string& message);
     void section_end();
 
   private:
     std::chrono::steady_clock::time_point start;
     std::chrono::steady_clock::time_point t0;
-    std::optional<std::string_view> message;
-    std::string_view name;
-    bool fps;
+    std::string message;
+    std::string name;
   };
 }
 

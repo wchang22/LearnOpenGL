@@ -1,47 +1,55 @@
 #include "timescope.h"
-#include "util/logging.h"
-#include "util/profiling/timeaccumulator.h"
+#include "util/profiling/timetree.h"
 
 namespace Profiling {
   using namespace std::chrono;
-  static auto logger = Logging::get_logger();
-  static TimeAccumulator accumulator;
+  static auto time_tree = TimeTree();
+  static std::string current_parent;
 
-  TimeScope::TimeScope(std::string_view name, bool fps)
+  TimeScope::TimeScope(const std::string& name)
     : start(steady_clock::now()),
-      name(name),
-      fps(fps)
+      name(name)
   {
+    time_tree.register_element(name);
+
+    if (current_parent == name) {
+      return;
+    }
+
+    if (current_parent == "") {
+      current_parent = name;
+      time_tree.register_global_parent(name);
+      return;
+    }
+
+    if (!time_tree.is_ancestor_of(name, current_parent)) {
+      time_tree.register_child(current_parent, name);
+    }
+
+    current_parent = name;
   }
 
   TimeScope::~TimeScope() {
     const auto duration = duration_cast<microseconds>(steady_clock::now() - start).count();
-    logger << "" << name << " total time: " << duration << " us";
-
-    if (fps) {
-      logger << "\nFPS (" << name << "): " << (1.0 / duration * 1e6) << std::endl;
-    }
-
-    logger << "\n" << std::endl;
-
-    accumulator.add_time(duration);
+    time_tree.add_time(name, duration);
   }
 
-  void TimeScope::section_start(std::optional<std::string_view> message)
+  void TimeScope::section_start(const std::string& message)
   {
     this->message = message;
     t0 = steady_clock::now();
+
+    time_tree.register_element(message);
+    time_tree.register_child(name, message);
+
+    if (current_parent != message) {
+      current_parent = message;
+    }
   }
 
   void TimeScope::section_end()
   {
-    auto duration = duration_cast<microseconds>(steady_clock::now() - t0).count();
-    logger << name;
-
-    if (message.has_value()) {
-      logger << " (" << message.value() << ")";
-    }
-
-    logger << " time: " << duration << " us" << std::endl;
+    const auto duration = duration_cast<microseconds>(steady_clock::now() - t0).count();
+    time_tree.add_time(message, duration);
   }
 }
