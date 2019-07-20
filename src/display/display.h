@@ -14,6 +14,7 @@
 #include "shadow/point_shadow.h"
 #include "framebuffer/gaussianblur.h"
 #include "framebuffer/multisampleframebuffer.h"
+#include "framebuffer/ssao.h"
 
 typedef glm::vec3 vec3;
 typedef glm::mat3 mat3;
@@ -53,6 +54,7 @@ private:
   PointShadow point_shadow;
   GaussianBlur blur;
   FrameBuffer gbuffer;
+  SSAO ssao;
 
   Lights lights;
 };

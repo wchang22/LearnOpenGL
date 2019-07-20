@@ -2,7 +2,6 @@
 #include "util/exception.h"
 
 #include <algorithm>
-#include <unordered_map>
 
 #include <stb_image/stb_image.h>
 
@@ -137,24 +136,16 @@ void Textures::use_textures(const Shader& shader) const {
   std::unordered_map<std::string, unsigned int> texture_counts;
 
   for (unsigned int i = 0; i < texture_ids.size(); i++) {
-    glActiveTexture(GL_TEXTURE0 + i);
-    const std::string& name = texture_types[i];
+    use_texture(shader, texture_counts, i);
+  }
+}
 
-    auto it = texture_counts.find(name);
+void Textures::use_textures(const Shader& shader, std::initializer_list<unsigned int> textures) const
+{
+  std::unordered_map<std::string, unsigned int> texture_counts;
 
-    if (it == texture_counts.end()) {
-      glUniform1i(shader.get_uniform_location(name + "1"), static_cast<GLint>(i));
-      texture_counts[name] = 1;
-    } else {
-      glUniform1i(shader.get_uniform_location(name + std::to_string(++it->second)),
-                  static_cast<GLint>(i));
-    }
-
-    if (name == "texture_cubemap") {
-      glBindTexture(GL_TEXTURE_CUBE_MAP, texture_ids[i]);
-    } else {
-      glBindTexture(GL_TEXTURE_2D, texture_ids[i]);
-    }
+  for (unsigned int i : textures) {
+    use_texture(shader, texture_counts, i);
   }
 }
 
@@ -209,4 +200,28 @@ void Textures::clear()
 size_t Textures::size() const
 {
   return texture_ids.size();
+}
+
+void Textures::use_texture(const Shader& shader,
+                           std::unordered_map<std::string, unsigned int>& texture_counts,
+                           unsigned int i) const
+{
+  glActiveTexture(GL_TEXTURE0 + i);
+  const std::string& name = texture_types[i];
+
+  auto it = texture_counts.find(name);
+
+  if (it == texture_counts.end()) {
+    glUniform1i(shader.get_uniform_location(name + "1"), static_cast<GLint>(i));
+    texture_counts[name] = 1;
+  } else {
+    glUniform1i(shader.get_uniform_location(name + std::to_string(++it->second)),
+                static_cast<GLint>(i));
+  }
+
+  if (name == "texture_cubemap") {
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture_ids[i]);
+  } else {
+    glBindTexture(GL_TEXTURE_2D, texture_ids[i]);
+  }
 }

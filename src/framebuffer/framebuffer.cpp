@@ -86,6 +86,12 @@ std::tuple<GLenum, GLenum> FrameBuffer::get_pixel_format_type(GLenum buffer_form
     case GL_RG16F:
     case GL_RG32F:
       return std::make_tuple(GL_RG, GL_FLOAT);
+    case GL_RED:
+    case GL_R16:
+      return std::make_tuple(GL_RGB, GL_UNSIGNED_BYTE);
+    case GL_R16F:
+    case GL_R32F:
+      return std::make_tuple(GL_RGB, GL_FLOAT);
     default:
       throw FrameBufferException("Unknown framebuffer type: " + std::to_string(buffer_format));
   }
@@ -122,6 +128,12 @@ void FrameBuffer::draw_scene() const
   rect.draw(*shader, textures);
 }
 
+void FrameBuffer::use_textures(const Shader& shader, std::initializer_list<unsigned int> textures) const
+{
+  shader.use_shader_program();
+  this->textures.use_textures(shader, textures);
+}
+
 void FrameBuffer::blit_depth() const
 {
   glEnable(GL_DEPTH_TEST);
@@ -131,6 +143,22 @@ void FrameBuffer::blit_depth() const
   glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<unsigned int>(current_FBO));
   glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+  glBindFramebuffer(GL_FRAMEBUFFER, static_cast<unsigned int>(current_FBO));
+}
+
+void FrameBuffer::blit_color(unsigned int from, unsigned int to) const
+{
+  int current_FBO;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &current_FBO);
+
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<unsigned int>(current_FBO));
+
+  glReadBuffer(GL_COLOR_ATTACHMENT0 + from);
+  glDrawBuffer(GL_COLOR_ATTACHMENT0 + to);
+
+  glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
   glBindFramebuffer(GL_FRAMEBUFFER, static_cast<unsigned int>(current_FBO));
 }
 

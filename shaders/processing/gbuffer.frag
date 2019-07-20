@@ -15,12 +15,19 @@ in V_DATA {
     vec3 tangent_frag_pos;
 } fs_in;
 
+layout (std140, binding = 0) uniform Matrices {
+    mat4 perspective;
+    mat4 view;
+};
+
 layout (location = 0) out vec3 position;
-layout (location = 1) out vec3 normal;
-layout (location = 2) out vec4 diffuse_spec;
-layout (location = 3) out vec3 t;
-layout (location = 4) out vec3 b;
-layout (location = 5) out vec3 n;
+layout (location = 1) out vec3 position_view;
+layout (location = 2) out vec3 normal;
+layout (location = 3) out vec3 normal_view;
+layout (location = 4) out vec4 diffuse_spec;
+layout (location = 5) out vec3 t;
+layout (location = 6) out vec3 b;
+layout (location = 7) out vec3 n;
 
 uniform bool gamma;
 uniform bool parallax;
@@ -64,6 +71,8 @@ void main() {
     }
 
     position = fs_in.position;
+    position_view = vec3(view * vec4(position, 1.0));
+
     normal = texture(texture_normal1, texture_coords).rgb;
 
     if (gamma) {
@@ -71,8 +80,10 @@ void main() {
     }
 
     normal = normalize(normal * 2.0 - 1.0);
-    diffuse_spec.rgb = texture(texture_diffuse1, texture_coords).rgb;
-    diffuse_spec.a = texture(texture_specular1, texture_coords).r;
+    normal_view = vec3(view * vec4(normal, 0.0));
+//    diffuse_spec.rgb = texture(texture_diffuse1, texture_coords).rgb;
+//    diffuse_spec.a = texture(texture_specular1, texture_coords).r;
+    diffuse_spec = vec4(1.0f);
 
     t = fs_in.t;
     b = fs_in.b;

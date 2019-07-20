@@ -13,6 +13,7 @@
 class FrameBuffer
 {
   friend class GaussianBlur;
+  friend class SSAO;
 
 public:
   FrameBuffer(int width, int height,
@@ -25,7 +26,10 @@ public:
   virtual void bind_framebuffer() const;
   virtual void unbind_framebuffer() const;
   virtual void draw_scene() const;
+  virtual void use_textures(const Shader& shader,
+                            std::initializer_list<unsigned int> textures) const;
   virtual void blit_depth() const;
+  virtual void blit_color(unsigned int from, unsigned int to) const;
   virtual std::shared_ptr<Shader> get_shader() const;
 
 protected:

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 
 #include "shader/shader.h"
 
@@ -21,12 +22,16 @@ public:
   void load_cubemap(std::initializer_list<const char*> faces);
   void add_texture(std::string_view type, unsigned int id);
   void use_textures(const Shader& shader) const;
+  void use_textures(const Shader& shader, std::initializer_list<unsigned int> textures) const;
   void append(Textures&& other);
   void append(const Textures& other);
   void clear();
   size_t size() const;
 
 private:
+  void use_texture(const Shader& shader,
+                   std::unordered_map<std::string, unsigned int>& texture_counts,
+                   unsigned int i) const;
   std::vector<unsigned int> texture_ids;
   std::vector<std::string> texture_paths;
   std::vector<std::string> texture_types;

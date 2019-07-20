@@ -18,7 +18,9 @@ Display::Display(std::shared_ptr<Camera> camera)
          "../../shaders/processing/fb.vert", "../../shaders/processing/fb.frag"),
     gbuffer(Window::width(), Window::height(),
             "../../shaders/processing/deferred.vert", "../../shaders/processing/deferred.frag",
-            { GL_RGB16F, GL_RGB16F, GL_RGBA, GL_RGB16F, GL_RGB16F, GL_RGB16F }),
+            { GL_RGB16F, GL_RGB16F, GL_RGB16F, GL_RGB16F, GL_RGBA, GL_RGB16F, GL_RGB16F, GL_RGB16F }),
+    ssao(Window::width(), Window::height(),
+         "../../shaders/processing/ssao.vert", "../../shaders/processing/ssao.frag"),
     lights(camera)
 {
   srand(static_cast<unsigned int>(time(nullptr)));
@@ -51,9 +53,17 @@ void Display::draw() const {
   gbuffer.unbind_framebuffer();
   PROFILE_SECTION_END()
 
+  PROFILE_SECTION_START("SSAO")
+  ssao.bind_framebuffer();
+  gbuffer.use_textures(*ssao.get_shader(), { 1, 3 });
+  Object::set_world_space_transform(camera->perspective(), camera->lookat());
+  ssao.render();
+  PROFILE_SECTION_END()
+
   PROFILE_SECTION_START("Lighting Pass")
   blur.bind_framebuffer();
 
+  ssao.use_ssao(*gbuffer.get_shader());
   gbuffer.draw_scene();
   gbuffer.blit_depth();
   PROFILE_SECTION_END()
@@ -169,8 +179,9 @@ void Display::draw_model(const Shader& shader) const
   Object::set_model_transforms({
     {
       vec3(0.2f),
-      std::make_pair(-static_cast<float>(glfwGetTime()), vec3(0.0f, 1.0f, 0.0f)),
-      vec3(0.0f, -0.5f, 0.0f)
+                                   {},
+//      std::make_pair(-static_cast<float>(glfwGetTime()), vec3(0.0f, 1.0f, 0.0f)),
+      vec3(0.0f, -0.5f, -7.0f)
     },
   });
   model_nanosuit.draw(shader, { "gamma" });

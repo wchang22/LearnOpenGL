@@ -11,6 +11,9 @@ uniform sampler2D texture_screen3;
 uniform sampler2D texture_screen4;
 uniform sampler2D texture_screen5;
 uniform sampler2D texture_screen6;
+uniform sampler2D texture_screen7;
+uniform sampler2D texture_screen8;
+uniform sampler2D ssao;
 uniform samplerCube shadow_map;
 
 struct DirLight {
@@ -49,7 +52,7 @@ layout (std140, binding = 9) uniform PointShadow {
 };
 
 vec3 calc_point_light(PointLight light, vec3 normal, vec3 light_pos, vec3 frag_position, vec3 eye_direction,
-                      vec3 diffuse_texture, vec3 specular_texture, float shadow) {
+                      vec3 diffuse_texture, vec3 specular_texture, float shadow, float ambient_occlusion) {
     float light_distance = distance(light_pos, frag_position);
     float attenuation = dot(light.attenuation,
                             vec3(1.0, light_distance, light_distance * light_distance));
@@ -57,7 +60,7 @@ vec3 calc_point_light(PointLight light, vec3 normal, vec3 light_pos, vec3 frag_p
     vec3 light_direction = normalize(light_pos - frag_position);
     vec3 half_vec = normalize(eye_direction + light_direction);
 
-    vec3 ambient = light.ambient * diffuse_texture;
+    vec3 ambient = light.ambient * diffuse_texture * ambient_occlusion;
     vec3 diffuse = light.diffuse * diffuse_texture * max(dot(normal, light_direction), 0.0);
     vec3 specular = light.specular * specular_texture *
                     pow(max(dot(normal, half_vec), 0.0), 32);
@@ -105,16 +108,20 @@ vec3 filter_bright_colors(vec3 color) {
 void main()
 {
     vec3 position = texture(texture_screen1, texture_coords).rgb;
-    vec3 normal = texture(texture_screen2, texture_coords).rgb;
-    vec3 diffuse = texture(texture_screen3, texture_coords).rgb;
-    vec3 specular = texture(texture_screen3, texture_coords).aaa;
-    vec3 t = texture(texture_screen4, texture_coords).rgb;
-    vec3 b = texture(texture_screen5, texture_coords).rgb;
-    vec3 n = texture(texture_screen6, texture_coords).rgb;
+    vec3 position_view = texture(texture_screen2, texture_coords).rgb;
+    vec3 normal = texture(texture_screen3, texture_coords).rgb;
+    vec3 normal_view = texture(texture_screen4, texture_coords).rgb;
+    vec4 diffuse_specular = texture(texture_screen5, texture_coords);
+    vec3 diffuse = diffuse_specular.rgb;
+    vec3 specular = diffuse_specular.aaa;
+    vec3 t = texture(texture_screen6, texture_coords).rgb;
+    vec3 b = texture(texture_screen7, texture_coords).rgb;
+    vec3 n = texture(texture_screen8, texture_coords).rgb;
     mat3 tbn = transpose(mat3(t, b, n));
     vec3 tangent_view_pos = tbn * view_position;
     vec3 tangent_frag_pos = tbn * position;
     vec3 eye_direction = normalize(tangent_view_pos - tangent_frag_pos);
+    float ambient_occlusion = texture(ssao, texture_coords).r;
 
     float shadow = 0.0;
 
@@ -128,9 +135,9 @@ void main()
     for (int i = 0; i < num_point_lights; i++) {
         vec3 tangent_light_pos = tbn * point_light[i].position;
         color += calc_point_light(point_light[i], normal, tangent_light_pos, tangent_frag_pos,
-                                  eye_direction, diffuse, specular, shadow);
+                                  eye_direction, diffuse, specular, shadow, ambient_occlusion);
     }
 
-    frag_color = vec4(color, 1.0);
+    frag_color = vec4(vec3(ambient_occlusion), 1.0);
     bright_color = vec4(filter_bright_colors(color), 1.0);
 }
